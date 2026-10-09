@@ -106,7 +106,23 @@ def fazer(t):
         print(f"  Portal: HTTP {r.status_code} {r.text[:300]}", flush=True)
 
 
+def teste(url):
+    """Modo de teste (Run workflow com um link): transcreve 3 minutos e mostra, sem falar com o Portal."""
+    with tempfile.TemporaryDirectory() as pasta:
+        wav = os.path.join(pasta, "audio.wav")
+        comeco = time.time()
+        extrair_audio(url, {"ini": 0, "fim": 180}, wav)
+        m = modelo("base.en")
+        segmentos, info = m.transcribe(wav, language="en", beam_size=1, vad_filter=True, condition_on_previous_text=False)
+        for s in segmentos:
+            print(f"[{s.start:7.2f} → {s.end:7.2f}] {s.text.strip()}", flush=True)
+        print(f"Teste: {info.duration:.0f} s de áudio em {time.time() - comeco:.0f} s.", flush=True)
+
+
 def main():
+    if os.environ.get("URL_DE_TESTE"):
+        teste(os.environ["URL_DE_TESTE"])
+        return
     feitas = 0
     while time.time() - INICIO < LIMITE_PARA_COMECAR:
         r = portal("POST", "/api/robo/tarefas/proxima")

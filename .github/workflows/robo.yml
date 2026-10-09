@@ -4,7 +4,12 @@ name: Robô de IA
 on:
   schedule:
     - cron: "7,22,37,52 * * * *"
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      url_de_teste:
+        description: "Só para testar o robô: link de um áudio/vídeo (não mexe no Portal)"
+        required: false
+        default: ""
 
 permissions:
   id-token: write # token OIDC: é assim que o Portal sabe que é este robô (sem senha)
@@ -30,6 +35,7 @@ jobs:
           TOKEN=$(curl -sS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=bylinguals-portal" | python3 -c 'import sys,json;print(json.load(sys.stdin)["value"])')
           STATUS=$(curl -sS -o fila.json -w "%{http_code}" -X GET -H "Authorization: Bearer $TOKEN" "$SITE_URL/api/robo/tarefas/fila") || STATUS=000
           echo "HTTP $STATUS"; cat fila.json || true; echo
+          if [ -n "${{ inputs.url_de_teste }}" ]; then echo "trabalho=sim" >> "$GITHUB_OUTPUT"; exit 0; fi
           if [ "$STATUS" = "200" ] && grep -q '"pendentes":0' fila.json; then echo "trabalho=nao" >> "$GITHUB_OUTPUT"; else echo "trabalho=sim" >> "$GITHUB_OUTPUT"; fi
 
       - uses: actions/setup-python@v5
@@ -54,6 +60,8 @@ jobs:
 
       - name: Trabalhar
         if: steps.fila.outputs.trabalho == 'sim'
+        env:
+          URL_DE_TESTE: ${{ inputs.url_de_teste }}
         run: python robo/robo.py
 
   # O GitHub desliga agendamentos de repositório sem movimento há 60 dias: um commit vazio por mês mantém o robô vivo.
