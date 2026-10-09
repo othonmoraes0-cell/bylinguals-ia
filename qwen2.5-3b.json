@@ -1,0 +1,256 @@
+[
+ {
+  "fonte": "The New York Times (feed: título e resumo)",
+  "licenca": "Direitos reservados: só os fatos do feed, texto próprio e link",
+  "link": "https://www.nytimes.com/live/2026/10/09/world/nobel-peace-prize-winner-2026",
+  "titulo": "Live Updates: Human Rights Lawyer Navi Pillay Is Awarded Nobel Peace Prize",
+  "texto": "Live Updates: Human Rights Lawyer Navi Pillay Is Awarded Nobel Peace Prize. Ms. Pillay has served as a judge in her native South Africa and on international courts investigating war crimes. She led a U.N. panel that determined that Israel had committed genocide against Palestinians in Gaza, a finding the Israeli government rejected.",
+  "so_feed": true,
+  "saida": {
+   "section": "World",
+   "headline_everyday": "Nobel Prize for Rights Lawyer",
+   "everyday": "Rights lawyer Navi Pillay won Nobel Prize. She judged in South Africa. She found Israel guilty of genocide.",
+   "headline_real": "Rights Lawyer Wins Nobel Prize",
+   "real": "Rights lawyer Navi Pillay has won the Nobel Peace Prize. She served as a judge in South Africa. She led a UN panel that found Israel guilty of genocide. The Israeli government rejected this finding.",
+   "glossary": [
+    {
+     "word": "Rights lawyer",
+     "pt": "advogado de direitos humanos"
+    },
+    {
+     "word": "Nobel Prize",
+     "pt": "Prêmio Nobel"
+    },
+    {
+     "word": "judged",
+     "pt": "julgou"
+    },
+    {
+     "word": "international courts",
+     "pt": "courts internacionais"
+    },
+    {
+     "word": "war crimes",
+     "pt": "crimes de guerra"
+    },
+    {
+     "word": "genocide",
+     "pt": "genocídio"
+    },
+    {
+     "word": "genocide",
+     "pt": "genocídio"
+    },
+    {
+     "word": "Israeli government",
+     "pt": "governo israelense"
+    }
+   ]
+  },
+  "segundos": 28,
+  "uso": {
+   "completion_tokens": 263,
+   "prompt_tokens": 370,
+   "total_tokens": 633,
+   "prompt_tokens_details": {
+    "cached_tokens": 0
+   }
+  },
+  "problemas": [
+   "nome 'Wins' não está na fonte"
+  ],
+  "bruto": ""
+ },
+ {
+  "fonte": "CNN Brasil (feed: título e resumo)",
+  "licenca": "Direitos reservados: só os fatos do feed, texto próprio e link",
+  "link": "https://www.cnnbrasil.com.br/internacional/principe-harry-diz-que-entrou-em-depressao-ao-pensar-em-futuro-na-realeza/",
+  "titulo": "Príncipe Harry diz que entrou em depressão ao pensar em futuro na realeza",
+  "texto": "Príncipe Harry diz que entrou em depressão ao pensar em futuro na realeza. Duque de Sussex relembrou momento em transmissão sobre luto e falou sobre impacto emocional da morte da princesa Diana; ele explicou que distância de ambiente estressante afetou saúde mental",
+  "so_feed": true,
+  "saida": {
+   "section": "Culture",
+   "headline_everyday": "Prince Harry talks about depression",
+   "everyday": "Prince Harry says he felt sad thinking about his future. He talked about feeling bad after Princess Diana died. He said being far away from the stressful royal life made him feel bad.",
+   "headline_real": "Harry: Depressed Thinking About Royal Life",
+   "real": "Prince Harry said he felt sad thinking about his future in the royal family. He spoke about feeling bad after Princess Diana died. He explained that being far away from the stressful royal life made him feel bad.",
+   "glossary": [
+    {
+     "word": "depression",
+     "pt": "tristeza"
+    },
+    {
+     "word": "stressful",
+     "pt": "estressante"
+    },
+    {
+     "word": "royal",
+     "pt": "real"
+    },
+    {
+     "word": "feeling bad",
+     "pt": "sentir-se mal"
+    },
+    {
+     "word": "talked about",
+     "pt": "falou sobre"
+    },
+    {
+     "word": "felt sad",
+     "pt": "sentiu-se triste"
+    },
+    {
+     "word": "far away",
+     "pt": "longe"
+    },
+    {
+     "word": "made him feel bad",
+     "pt": "o que o fez sentir-se mal"
+    }
+   ]
+  },
+  "segundos": 27,
+  "uso": {
+   "completion_tokens": 272,
+   "prompt_tokens": 369,
+   "total_tokens": 641,
+   "prompt_tokens_details": {
+    "cached_tokens": 85
+   }
+  },
+  "problemas": [
+   "nome 'About' não está na fonte",
+   "nome 'Depressed' não está na fonte",
+   "nome 'Life' não está na fonte",
+   "nome 'Princess' não está na fonte",
+   "nome 'Royal' não está na fonte",
+   "nome 'Thinking' não está na fonte"
+  ],
+  "bruto": ""
+ },
+ {
+  "fonte": "The New York Times · Science (feed: título e resumo)",
+  "licenca": "Direitos reservados: só os fatos do feed, texto próprio e link",
+  "link": "https://www.nytimes.com/2026/10/09/science/cancer-vaccines-nih-big-bet.html",
+  "titulo": "Cancer Vaccines Are the N.I.H’s Next ‘Big Bet’",
+  "texto": "Cancer Vaccines Are the N.I.H’s Next ‘Big Bet’. New details have emerged about an initiative that starts in December to fast-track the vaccines, similar to the successful push for the Covid-19 vaccine.",
+  "so_feed": true,
+  "saida": {
+   "section": "Health",
+   "headline_everyday": "Cancer Vaccines Get Support",
+   "everyday": "Cancer vaccines are being made. They help fight cancer. The government is helping.",
+   "headline_real": "Cancer Vaccines Get Support",
+   "real": "Cancer vaccines are being made. They help fight cancer. The government is helping. This starts in December. It's like making the Covid vaccine.",
+   "glossary": [
+    {
+     "word": "vaccines",
+     "pt": "vacinas"
+    },
+    {
+     "word": "government",
+     "pt": "governo"
+    },
+    {
+     "word": "help",
+     "pt": "ajudar"
+    },
+    {
+     "word": "starts",
+     "pt": "começa"
+    },
+    {
+     "word": "December",
+     "pt": "dezembro"
+    },
+    {
+     "word": "like",
+     "pt": "como"
+    },
+    {
+     "word": "make",
+     "pt": "fazer"
+    },
+    {
+     "word": "vaccine",
+     "pt": "vacina"
+    }
+   ]
+  },
+  "segundos": 23,
+  "uso": {
+   "completion_tokens": 220,
+   "prompt_tokens": 352,
+   "total_tokens": 572,
+   "prompt_tokens_details": {
+    "cached_tokens": 85
+   }
+  },
+  "problemas": [
+   "nome 'Get' não está na fonte",
+   "nome 'Support' não está na fonte"
+  ],
+  "bruto": ""
+ },
+ {
+  "fonte": "NASA",
+  "licenca": "Domínio público (NASA)",
+  "link": "https://science.nasa.gov/earth/earth-observatory/floodwaters-overwhelm-thailand/",
+  "titulo": "Floodwaters Overwhelm Thailand",
+  "texto": "September falls in the heart of the monsoon season in Thailand, where cities and towns are accustomed to the afternoon rains and thunderstorms that frequently roll through. But throughout late September and early October 2026, persistent heavy rains punctuated by intense downpours left low-lying areas across the country in Southeast Asia under sustained flooding.\nPrachin Buri province was among the areas where flooding was widespread. The right image above shows land along the Bang Pakong River and nearby agricultural areas and aquaculture facilities inundated on October 2, 2026. The left image shows the same area at the same time of year in 2025. Acquired with NASA-USGS Landsat satellites, the images are false-color to better distinguish water from vegetation, developed land, and other surfaces. The bright red shapes are floating solar arrays.\nSome of the flooding likely stemmed from a low-pressure system that stalled over the area for several days in late September. Stoked by moisture and energy from the warm Gulf of Thailand nearby, the system delivered especially intense rains to the region. About 100 kilometers (60 miles) to the west, Bangkok received nearly 300 millimeters (11.8 inches) of rain over a 48-hour period, according to news reports, close to the average monthly rainfall total for September of 344 millimeters (13.5 inches).\nSince mid-September, flooding has occurred in 50 provinces across the country, affecting over 4 million people and causing dozens of death",
+  "saida": {
+   "section": "Environment",
+   "headline_everyday": "Bangkok Flooded Again",
+   "everyday": "Thailand had floods in 2026. Bangkok got much rain. Many people lost homes.",
+   "headline_real": "Bangkok Floods Hit 1.7 Million People",
+   "real": "In late September and early October 2026, Thailand experienced widespread flooding. Bangkok received nearly 300 millimeters (11.8 inches) of rain in 48 hours, close to the average monthly total. Flooding affected 50 provinces, 4 million people, and 270,000 hectares of farmland. The floods were caused by a low-pressure system that stalled over the area, delivering intense rains.",
+   "glossary": [
+    {
+     "word": "flooding",
+     "pt": "umcorrimento"
+    },
+    {
+     "word": "province",
+     "pt": "um distrito"
+    },
+    {
+     "word": "province",
+     "pt": "um distrito"
+    },
+    {
+     "word": "affected",
+     "pt": "afetado"
+    },
+    {
+     "word": "millimeters",
+     "pt": "milímetros"
+    },
+    {
+     "word": "hectares",
+     "pt": "hectares"
+    },
+    {
+     "word": "orchards",
+     "pt": "órgãos"
+    },
+    {
+     "word": "stalled",
+     "pt": "parou"
+    }
+   ]
+  },
+  "segundos": 47,
+  "uso": {
+   "completion_tokens": 302,
+   "prompt_tokens": 855,
+   "total_tokens": 1157,
+   "prompt_tokens_details": {
+    "cached_tokens": 0
+   }
+  },
+  "problemas": [
+   "nome 'Again' não está na fonte",
+   "nome 'Flooded' não está na fonte"
+  ],
+  "bruto": ""
+ }
+]
