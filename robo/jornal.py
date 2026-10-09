@@ -134,13 +134,27 @@ def nomes(texto):
     return {n for n in re.findall(r"\b[A-ZÀ-Ú][a-zà-ú]{2,}(?:\s[A-ZÀ-Ú][a-zà-ú]{2,})*", texto) if n.split()[0].lower() not in PARADAS}
 
 
+# Nomes que aparecem em muitos assuntos diferentes (países, continentes, chefes de governo): sozinhos não juntam notícias.
+NOMES_GENERICOS = {
+    "brazil", "brasil", "china", "chinese", "europe", "european", "united", "states", "america", "american", "americans",
+    "russia", "russian", "ukraine", "israel", "israeli", "gaza", "india", "britain", "british", "france", "french",
+    "germany", "german", "japan", "africa", "african", "world", "trump", "lula", "president", "minister", "government",
+    "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", "washington", "london", "paris",
+}
+
+
 def mesmo_assunto(a, b):
+    """Mesmo acontecimento, não só o mesmo país: nomes específicos em comum, título parecido e boa parte das palavras."""
     ta, tb = a["titulo"] + " " + a["resumo"], b["titulo"] + " " + b["resumo"]
-    comuns = palavras_chave(ta) & palavras_chave(tb)
+    ka, kb = palavras_chave(ta), palavras_chave(tb)
+    comuns = ka & kb
     na = {p for n in nomes(ta) for p in n.split()}
     nb_txt = tb.lower()
-    nomes_comuns = {p for p in na if p.lower() in nb_txt and len(p) > 3}
-    return len(nomes_comuns) >= 2 and len(comuns) >= 3
+    nomes_comuns = {p.lower() for p in na if p.lower() in nb_txt and len(p) > 3}
+    especificos = nomes_comuns - NOMES_GENERICOS
+    titulos = palavras_chave(a["titulo"]) & palavras_chave(b["titulo"])
+    jaccard = len(comuns) / max(1, len(ka | kb))
+    return len(nomes_comuns) >= 2 and len(comuns) >= 3 and jaccard >= 0.12 and ((len(especificos) >= 1 and len(titulos) >= 1) or len(titulos) >= 3)
 
 
 def secao_da_cnn(link):
