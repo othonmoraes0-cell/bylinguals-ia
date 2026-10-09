@@ -104,6 +104,12 @@ TEMAS = {
     }),
 }
 REGIOES = ("US", "World", "Brazil")
+# Título que não é notícia: chamada para leitores, galeria de fotos, coluna assinada ("… | Fulano de Tal"), homenagem.
+NAO_E_NOTICIA = re.compile(
+    r"(send us|your questions|tell us|in pictures|week in images|photos of|^watch|^listen|quiz|crossword|an appreciation|"
+    r"\| [A-ZÀ-Ú][a-zà-ú]+ [A-ZÀ-Ú]|what to watch|best of the week|newsletter|^veja (fotos|vídeo)|ao vivo|horóscopo)",
+    re.I,
+)
 # Link que não é notícia (opinião, ao vivo, vídeo, podcast, quiz, newsletter).
 FORA = re.compile(r"/(opinion|opiniao|colunas|blogs?|live|ao-vivo|video|videos|podcasts?|quiz|newsletters?|interactive|crosswords|games)/", re.I)
 
@@ -127,9 +133,17 @@ def limpar(t):
     return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", html.unescape(t or ""))).strip()
 
 
+CACHE_DE_FEEDS = {}
+
+
 def itens_do_feed(url, veiculo):
+    if url in CACHE_DE_FEEDS:
+        return [dict(x, veiculo=veiculo) for x in CACHE_DE_FEEDS[url]]
     try:
-        raiz = ET.fromstring(baixar(url).encode("utf-8"))
+        # Os bytes como vieram: o próprio XML diz a codificação (a Folha e o UOL usam ISO-8859-1).
+        r = requests.get(url, headers=UA, timeout=40)
+        r.raise_for_status()
+        raiz = ET.fromstring(r.content[:3_000_000])
     except Exception as e:  # noqa: BLE001
         print(f"  feed falhou: {veiculo} {url}: {str(e)[:120]}", flush=True)
         return []
@@ -149,7 +163,8 @@ def itens_do_feed(url, veiculo):
         if d["titulo"] and d["link"].startswith("https://"):
             itens.append(d)
     print(f"  feed ok: {veiculo} {url} ({len(itens)})", flush=True)
-    return itens
+    CACHE_DE_FEEDS[url] = itens
+    return [dict(x) for x in itens]
 
 
 def palavras_chave(texto):
@@ -396,7 +411,7 @@ def itens_da_regiao(feeds):
         if url == NASA:
             continue
         for posicao, it in enumerate(itens_do_feed(url, veiculo)):
-            if it["link"] in vistos or FORA.search(it["link"]) or len(it["resumo"].split()) < 12:
+            if it["link"] in vistos or FORA.search(it["link"]) or NAO_E_NOTICIA.search(it["titulo"]) or len(it["resumo"].split()) < 12:
                 continue
             vistos.add(it["link"])
             it["posicao"] = posicao
@@ -404,13 +419,26 @@ def itens_da_regiao(feeds):
     return sorted(itens, key=lambda x: x["posicao"])
 
 
-def grupos_da_regiao(itens, quantos):
-    """Notícias completas: o mesmo acontecimento em 3+ veículos (uma fonte por veículo, até 6)."""
+def apoio_da_regiao(regiao):
+    """Todos os feeds da região, de todos os temas: o mesmo acontecimento pode estar na seção de outro jornal."""
+    feeds, vistos = [], set()
+    for _, regioes in TEMAS.values():
+        for veiculo, url in regioes[regiao]:
+            if url not in vistos:
+                vistos.add(url)
+                feeds.append((veiculo, url))
+    return itens_da_regiao(feeds)
+
+
+def grupos_da_regiao(itens, quantos, apoio_extra=()):
+    """Notícias completas: o mesmo acontecimento em 3+ veículos (uma fonte por veículo, até 6). O assunto vem dos feeds
+    do tema; as outras fontes podem vir de qualquer feed da região."""
     grupos, usados = [], set()
+    pool = list(itens) + [x for x in apoio_extra if x["link"] not in {i["link"] for i in itens}]
     for p in itens:
         if len(grupos) >= quantos or p["link"] in usados:
             continue
-        apoio = [it for it in itens if it["link"] != p["link"] and it["link"] not in usados and mesmo_assunto(p, it)]
+        apoio = [it for it in pool if it["link"] != p["link"] and it["link"] not in usados and mesmo_assunto(p, it)]
         escolhidas, vistos = [p], {p["veiculo"]}
         for a in apoio:
             if a["veiculo"] not in vistos and len(escolhidas) < 6:
@@ -487,7 +515,7 @@ def so_feeds():
     for chave, (nome, regioes) in TEMAS.items():
         for regiao in REGIOES:
             itens = itens_da_regiao(regioes[regiao])
-            grupos, usados = grupos_da_regiao(itens, POR_REGIAO)
+            grupos, usados = grupos_da_regiao(itens, POR_REGIAO, apoio_da_regiao(regiao))
             notas = notas_da_regiao(itens, usados, POR_REGIAO - len(grupos))
             linhas.append(f"- **{nome} · {regiao}**: {len(itens)} itens, {len(grupos)} completas, {len(notas)} notas")
             for g in grupos:
@@ -525,7 +553,7 @@ def main():
     for regiao in REGIOES:
         feeds = regioes[regiao]
         itens = itens_da_regiao(feeds)
-        grupos, usados = grupos_da_regiao(itens, POR_REGIAO)
+        grupos, usados = grupos_da_regiao(itens, POR_REGIAO, apoio_da_regiao(regiao))
         if any(url == NASA for _, url in feeds):
             nasa = da_nasa()
             if nasa:
