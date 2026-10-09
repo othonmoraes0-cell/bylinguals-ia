@@ -1,0 +1,524 @@
+{
+ "dia": "2026-10-09",
+ "modelo": "qwen2.5-14b",
+ "noticias": [
+  {
+   "secao": "World",
+   "manchete": "Human Rights Lawyer Wins Nobel Peace Prize",
+   "mancheteEveryday": "Lawyer wins Nobel Prize",
+   "everyday": [
+    "Navi Pillay won the Nobel Peace Prize.",
+    "She worked for human rights in South Africa.",
+    "She led a UN panel about war crimes.",
+    "The panel said Israel did genocide in Gaza.",
+    "The US put sanctions on the court."
+   ],
+   "real": [
+    "Navi Pillay, a South African lawyer, won the Nobel Peace Prize.",
+    "She worked as a judge in South Africa and international courts.",
+    "She chaired a UN panel that accused Israel of genocide in Gaza.",
+    "The panel's findings were rejected by the Israeli government.",
+    "She served as UN human rights chief and is now an ICJ judge.",
+    "The US imposed sanctions on the International Criminal Court.",
+    "Pillay was the first non-white female judge of the High Court of South Africa."
+   ],
+   "glossario": [
+    {
+     "termo": "Nobel Peace Prize",
+     "traducao": "Prêmio Nobel da Paz"
+    },
+    {
+     "termo": "human rights",
+     "traducao": "direitos humanos"
+    },
+    {
+     "termo": "genocide",
+     "traducao": "genocídio"
+    },
+    {
+     "termo": "accused",
+     "traducao": "acusado"
+    },
+    {
+     "termo": "rejected",
+     "traducao": "rejeitado"
+    },
+    {
+     "termo": "imposed sanctions",
+     "traducao": "imposto sanções"
+    },
+    {
+     "termo": "International Criminal Court",
+     "traducao": "Tribunal Penal Internacional"
+    },
+    {
+     "termo": "High Court of South Africa",
+     "traducao": "Tribunal Superior da África do Sul"
+    }
+   ],
+   "fontes": [
+    {
+     "veiculo": "The New York Times",
+     "titulo": "Live Updates: Human Rights Lawyer Navi Pillay Is Awarded Nobel Peace Prize",
+     "link": "https://www.nytimes.com/live/2026/10/09/world/nobel-peace-prize-winner-2026"
+    },
+    {
+     "veiculo": "BBC",
+     "titulo": "Navi Pillay, former UN human rights chief, wins Nobel Peace Prize",
+     "link": "https://www.bbc.co.uk/news/articles/cm9wz5kng0x1o?at_medium=RSS&at_campaign=rss"
+    },
+    {
+     "veiculo": "The Guardian",
+     "titulo": "ICJ judge Navi Pillay wins Nobel peace prize for promoting international law",
+     "link": "https://www.theguardian.com/world/2026/oct/09/navanethem-navi-pillay-wins-nobel-peace-prize"
+    },
+    {
+     "veiculo": "DW",
+     "titulo": "Nobel Peace Prize 2026 goes to Navanethem 'Navi' Pillay for her efforts to promote peace and international law",
+     "link": "https://www.dw.com/en/nobel-peace-prize-2026-goes-to-navanethem-navi-pillay-for-her-efforts-to-promote-peace-and-international-law/live-79598020?maca=en-rss-en-all-1573-rdf"
+    },
+    {
+     "veiculo": "g1",
+     "titulo": "O que é o Tribunal Penal Internacional, sancionado pelos EUA após juíza ganhar Nobel da Paz?",
+     "link": "https://g1.globo.com/mundo/noticia/2026/10/09/o-que-e-o-tribunal-penal-internacional-sancionado-pelos-eua-apos-ex-juiza-ganhar-nobel-da-paz.ghtml"
+    }
+   ],
+   "linkPrincipal": "https://www.nytimes.com/live/2026/10/09/world/nobel-peace-prize-winner-2026",
+   "imagem": null,
+   "everydayPt": [
+    "Navi Pillay ganhou o Prêmio Nobel da Paz.",
+    "Ela trabalhava para os direitos humanos na África do Sul.",
+    "Ela liderou um painel da ONU sobre crimes de guerra.",
+    "O painel disse que Israel fez genocídio em Gaza.",
+    "Os EUA colocaram sanções no tribunal."
+   ],
+   "realPt": [
+    "Navi Pillay, uma advogada sul-africana, ganhou o Prêmio Nobel da Paz.",
+    "Ela trabalhou como juíza na África do Sul e em tribunais internacionais.",
+    "Ela presidiu um painel da ONU que acusou Israel de genocídio em Gaza.",
+    "As descobertas do painel foram rejeitadas pelo governo israelense.",
+    "Ela serviu como chefe de direitos humanos da ONU e agora é juíza do ICJ.",
+    "Os EUA impuseram sanções ao Tribunal Penal Internacional.",
+    "Pillay foi a primeira juíza não-branca da Suprema Corte da África do Sul."
+   ]
+  },
+  {
+   "secao": "Culture",
+   "manchete": "Canadian Poet Anne Carson Wins Nobel Prize",
+   "mancheteEveryday": "Anne Carson wins Nobel Prize",
+   "everyday": [
+    "Anne Carson won the Nobel Prize in Literature.",
+    "Carson writes poetry and essays.",
+    "Her work mixes different types of writing.",
+    "She writes in a playful way."
+   ],
+   "real": [
+    "Anne Carson won the Nobel Prize in Literature this year.",
+    "Carson is known for her bold and inventive works.",
+    "She often mixes poetry, fiction, and scholarship.",
+    "The Swedish Academy praised Carson's playful dialogue with classical tradition.",
+    "Carson has written more than twenty books, including poetry and essays.",
+    "She teaches classics, comparative literature, and creative writing at universities."
+   ],
+   "glossario": [
+    {
+     "termo": "Nobel Prize",
+     "traducao": "Prêmio Nobel"
+    },
+    {
+     "termo": "literature",
+     "traducao": "literatura"
+    },
+    {
+     "termo": "inventive",
+     "traducao": "inventiva"
+    },
+    {
+     "termo": "dialogue",
+     "traducao": "diálogo"
+    },
+    {
+     "termo": "classical",
+     "traducao": "clássica"
+    },
+    {
+     "termo": "tradition",
+     "traducao": "tradição"
+    },
+    {
+     "termo": "praise",
+     "traducao": "elogio"
+    }
+   ],
+   "fontes": [
+    {
+     "veiculo": "The New York Times",
+     "titulo": "Anne Carson’s Publisher Has Won the Nobel Prize Twice in Two Years",
+     "link": "https://www.nytimes.com/2026/10/09/books/new-directions-nobel-anne-carson.html"
+    },
+    {
+     "veiculo": "BBC",
+     "titulo": "'Bold and inventive' Canadian poet Anne Carson wins Nobel Literature Prize",
+     "link": "https://www.bbc.co.uk/news/articles/cq4g1j54nepyo?at_medium=RSS&at_campaign=rss"
+    },
+    {
+     "veiculo": "The Guardian",
+     "titulo": "Anne Carson wins Nobel prize in literature 2026",
+     "link": "https://www.theguardian.com/books/2026/oct/08/wins-the-nobel-prize-in-literature-2026"
+    },
+    {
+     "veiculo": "DW",
+     "titulo": "2026 Nobel Prize winner Anne Carson: Where to start reading",
+     "link": "https://www.dw.com/en/2026-nobel-prize-winner-anne-carson-where-to-start-reading/a-79598953?maca=en-rss-en-all-1573-rdf"
+    }
+   ],
+   "linkPrincipal": "https://www.nytimes.com/2026/10/09/books/new-directions-nobel-anne-carson.html",
+   "imagem": null,
+   "everydayPt": [
+    "Anne Carson ganhou o Prêmio Nobel de Literatura.",
+    "Carson escreve poesia e ensaios.",
+    "Seu trabalho mistura diferentes tipos de escrita.",
+    "Ela escreve de uma maneira divertida."
+   ],
+   "realPt": [
+    "Anne Carson ganhou o Prêmio Nobel de Literatura este ano.",
+    "Carson é conhecida por seus trabalhos ousados e inventivos.",
+    "Ela mistura poesia, ficção e erudição.",
+    "A Academia Sueca elogiou o diálogo lúdico de Carson com a tradição clássica.",
+    "Carson escreveu mais de vinte livros, incluindo poesia e ensaios.",
+    "Ela ensina clássicos, literatura comparada e escrita criativa nas universidades."
+   ]
+  },
+  {
+   "secao": "Business",
+   "manchete": "China to cut hybrid car exports to Europe in trade deal",
+   "mancheteEveryday": "China limits car exports to Europe",
+   "everyday": [
+    "China will send fewer hybrid cars to Europe.",
+    "Europe and China made a deal about car exports.",
+    "Diesel prices are getting higher in Europe.",
+    "Diesel is used in many vehicles and machines.",
+    "Europe and China want to reduce trade problems."
+   ],
+   "real": [
+    "China and Europe agreed to limit Chinese hybrid car exports to Europe.",
+    "The deal could reduce Chinese hybrid car shipments to Europe by more than half over four years.",
+    "China's auto industry might become even stronger because of this deal.",
+    "Diesel prices are rising in Europe due to refinery disruptions and supply shortages.",
+    "A potential US export ban could worsen Europe's diesel shortage.",
+    "Diesel is crucial for trucks, farms, and industries in Europe."
+   ],
+   "glossario": [
+    {
+     "termo": "exports",
+     "traducao": "exportações"
+    },
+    {
+     "termo": "refinery disruptions",
+     "traducao": "perturbações nas refinarias"
+    },
+    {
+     "termo": "supply shortages",
+     "traducao": "falta de suprimentos"
+    },
+    {
+     "termo": "potential",
+     "traducao": "potencial"
+    },
+    {
+     "termo": "EU",
+     "traducao": "UE"
+    }
+   ],
+   "fontes": [
+    {
+     "veiculo": "The New York Times",
+     "titulo": "China and Europe Step Back From Trade War With Limits on Chinese Car Exports",
+     "link": "https://www.nytimes.com/2026/10/09/business/china-european-union-trade.html"
+    },
+    {
+     "veiculo": "The Guardian",
+     "titulo": "China agrees to ‘halve’ hybrid car exports to EU in landmark deal",
+     "link": "https://www.theguardian.com/business/2026/oct/09/china-agrees-to-curb-hybrid-car-exports-to-eu-in-landmark-deal"
+    },
+    {
+     "veiculo": "DW",
+     "titulo": "Diesel prices are surging putting further pressure on Europe",
+     "link": "https://www.dw.com/en/diesel-prices-are-surging-putting-further-pressure-on-europe/a-79390992?maca=en-rss-en-all-1573-rdf"
+    }
+   ],
+   "linkPrincipal": "https://www.nytimes.com/2026/10/09/business/china-european-union-trade.html",
+   "imagem": null,
+   "everydayPt": [
+    "A China enviará menos carros híbridos para a Europa.",
+    "A Europa e a China fizeram um acordo sobre as exportações de carros.",
+    "Os preços do diesel estão aumentando na Europa.",
+    "Diesel é usado em muitos veículos e máquinas.",
+    "A Europa e a China querem reduzir os problemas comerciais."
+   ],
+   "realPt": [
+    "China e Europa concordaram em limitar as exportações de carros híbridos chineses para a Europa.",
+    "O acordo poderia reduzir as remessas de carros híbridos chineses para a Europa em mais da metade em quatro anos.",
+    "A indústria automobilística chinesa pode se tornar ainda mais forte por causa desse acordo.",
+    "Os preços do diesel estão subindo na Europa devido a interrupções na refinaria e escassez de suprimentos.",
+    "Uma potencial proibição de exportação dos EUA pode piorar a escassez de diesel na Europa.",
+    "Diesel é crucial para caminhões, fazendas e indústrias na Europa."
+   ]
+  },
+  {
+   "secao": "Business",
+   "manchete": "Trump forms committee to investigate Fed governor Cook",
+   "mancheteEveryday": "Trump wants to check Cook",
+   "everyday": [
+    "Trump said he will check Cook.",
+    "Cook works at the Federal Reserve.",
+    "He will have a meeting about her.",
+    "The meeting will be on November.",
+    "It will not be open to the public."
+   ],
+   "real": [
+    "Trump announced he will form a committee to investigate Cook.",
+    "Cook is a member of the Federal Reserve.",
+    "The committee will meet with Justice Department officials.",
+    "The White House will hold a hearing on November 5.",
+    "The hearing will be closed to the public but transcribed.",
+    "The supreme court said firing her was unconstitutional."
+   ],
+   "glossario": [
+    {
+     "termo": "investigate",
+     "traducao": "investigar"
+    },
+    {
+     "termo": "committee",
+     "traducao": "comitê"
+    },
+    {
+     "termo": "Federal Reserve",
+     "traducao": "Banco Central dos Estados Unidos"
+    },
+    {
+     "termo": "unconstitutional",
+     "traducao": "inconstitucional"
+    },
+    {
+     "termo": "hearing",
+     "traducao": "audiência"
+    },
+    {
+     "termo": "transcribed",
+     "traducao": "transcrito"
+    }
+   ],
+   "fontes": [
+    {
+     "veiculo": "The New York Times",
+     "titulo": "Trump Announces White House Inquiry Into Fed Governor Lisa Cook",
+     "link": "https://www.nytimes.com/2026/10/09/business/trump-lisa-cook-fed.html"
+    },
+    {
+     "veiculo": "The Guardian",
+     "titulo": "Trump establishes committee to investigate Fed governor Lisa Cook",
+     "link": "https://www.theguardian.com/business/2026/oct/09/trump-investigate-lisa-cook-fed-governor"
+    },
+    {
+     "veiculo": "g1",
+     "titulo": "Trump cria comitê para investigar Lisa Cook, diretora do Fed, diz Casa Branca",
+     "link": "https://g1.globo.com/economia/noticia/2026/10/09/trump-cria-comite-para-investigar-lisa-cook-diretora-do-fed-diz-casa-branca.ghtml"
+    }
+   ],
+   "linkPrincipal": "https://www.nytimes.com/2026/10/09/business/trump-lisa-cook-fed.html",
+   "imagem": null,
+   "everydayPt": [
+    "Trump disse que vai checar Cook.",
+    "Cook trabalha no Federal Reserve.",
+    "Ele terá uma reunião sobre ela.",
+    "A reunião será em novembro.",
+    "Não estará aberto ao público."
+   ],
+   "realPt": [
+    "Trump anunciou que vai formar um comitê para investigar Cook.",
+    "Cook é membro da Reserva Federal.",
+    "O comitê se reunirá com funcionários do Departamento de Justiça.",
+    "A Casa Branca fará uma audiência em 5 de novembro.",
+    "A audiência será fechada ao público, mas transcrita.",
+    "A Suprema Corte disse que demiti-la era inconstitucional."
+   ]
+  },
+  {
+   "secao": "Health",
+   "manchete": "Russian lab worker dies from suspected plague",
+   "mancheteEveryday": "Lab worker dies from plague in Russia",
+   "everyday": [
+    "A lab worker died in Russia last week.",
+    "She worked at a research institute in Siberia.",
+    "Her illness is like the plague.",
+    "Experts want to know more about her death.",
+    "Russia did not share all the information."
+   ],
+   "real": [
+    "A 28-year-old lab worker died in Siberia last week.",
+    "She worked at an anti-plague research institute.",
+    "She fell ill with cold-like symptoms and died two days later.",
+    "Experts need transparent information for a full risk assessment.",
+    "She had nearly 200 contacts under medical observation."
+   ],
+   "glossario": [
+    {
+     "termo": "plague",
+     "traducao": "peste"
+    },
+    {
+     "termo": "symptoms",
+     "traducao": "sintomas"
+    },
+    {
+     "termo": "transparent",
+     "traducao": "transparente"
+    },
+    {
+     "termo": "assessment",
+     "traducao": "avaliação"
+    },
+    {
+     "termo": "contacts",
+     "traducao": "contatos"
+    },
+    {
+     "termo": "observation",
+     "traducao": "observação"
+    },
+    {
+     "termo": "transparent information",
+     "traducao": "informação transparente"
+    }
+   ],
+   "fontes": [
+    {
+     "veiculo": "The New York Times",
+     "titulo": "A Lab Worker’s Death Is Raising Plague Fears in Russia. What Do Experts Want to Know?",
+     "link": "https://www.nytimes.com/2026/10/07/science/plague-russia-biosafety.html"
+    },
+    {
+     "veiculo": "The Guardian",
+     "titulo": "WHO says it does not have ‘full picture’ from Russia following suspected plague death",
+     "link": "https://www.theguardian.com/world/2026/oct/07/who-says-it-does-not-have-full-picture-from-russia-following-suspected-plague-death"
+    },
+    {
+     "veiculo": "DW",
+     "titulo": "Suspected pneumonic plague in Siberia: What we know about the disease",
+     "link": "https://www.dw.com/en/suspected-pneumonic-plague-in-siberia-what-we-know-about-the-disease/a-79547919?maca=en-rss-en-all-1573-rdf"
+    },
+    {
+     "veiculo": "NPR",
+     "titulo": "Fill in the blank in the quiz: A plague research employee in Russia died from ____",
+     "link": "https://www.npr.org/2026/10/09/g-s1-147111/trump-bts-paramount-tv-el-nino-news-quiz"
+    }
+   ],
+   "linkPrincipal": "https://www.nytimes.com/2026/10/07/science/plague-russia-biosafety.html",
+   "imagem": null,
+   "everydayPt": [
+    "Um trabalhador de laboratório morreu na Rússia semana passada.",
+    "Ela trabalhou em um instituto de pesquisa na Sibéria.",
+    "A doença dela é como uma praga.",
+    "Especialistas querem saber mais sobre a morte dela.",
+    "A Rússia não compartilhou todas as informações."
+   ],
+   "realPt": [
+    "Um trabalhador de laboratório de 28 anos morreu na Sibéria semana passada.",
+    "Ela trabalhava em um instituto de pesquisa anti-praga.",
+    "Ela adoeceu com sintomas frios e morreu dois dias depois.",
+    "Especialistas precisam de informações transparentes para uma avaliação completa do risco.",
+    "Ela tinha quase 200 contatos sob observação médica."
+   ]
+  },
+  {
+   "secao": "Space & Earth",
+   "manchete": "Floods hit Thailand, affecting millions",
+   "mancheteEveryday": "Floods hit Thailand",
+   "everyday": [
+    "Floods hit many Thai cities.",
+    "Bangkok got lots of rain.",
+    "Farms lost crops because of floods.",
+    "People need help from Red Cross.",
+    "Floods came from a low-pressure system.",
+    "Floods made some areas very wet."
+   ],
+   "real": [
+    "Floods hit Thailand, affecting over 4 million people.",
+    "Bangkok received nearly 300 millimeters of rain in 48 hours.",
+    "Floods damaged about 270,000 hectares of farmland.",
+    "The International Federation of Red Cross and Red Crescent Societies provided aid.",
+    "NASA images show flooded areas near the Bang Pakong River.",
+    "Some flooding resulted from a low-pressure system that stalled over the area.",
+    "The system delivered especially intense rains to the region.",
+    "Floods occurred in 50 provinces, causing dozens of deaths.",
+    "Floods also affected agricultural areas and aquaculture facilities."
+   ],
+   "glossario": [
+    {
+     "termo": "affected",
+     "traducao": "afetado"
+    },
+    {
+     "termo": "received",
+     "traducao": "recebeu"
+    },
+    {
+     "termo": "damaged",
+     "traducao": "danificado"
+    },
+    {
+     "termo": "intense",
+     "traducao": "intenso"
+    },
+    {
+     "termo": "stalled",
+     "traducao": "parou"
+    },
+    {
+     "termo": "region",
+     "traducao": "região"
+    },
+    {
+     "termo": "occurred",
+     "traducao": "ocorreu"
+    }
+   ],
+   "fontes": [
+    {
+     "veiculo": "NASA",
+     "titulo": "Floodwaters Overwhelm Thailand",
+     "link": "https://science.nasa.gov/earth/earth-observatory/floodwaters-overwhelm-thailand/"
+    }
+   ],
+   "linkPrincipal": "https://science.nasa.gov/earth/earth-observatory/floodwaters-overwhelm-thailand/",
+   "imagem": {
+    "url": "https://assets.science.nasa.gov/content/dam/science/esd/eo/images/iotd/2026/floodwaters-overwhelm-thailand/thailandflooding_oli2_20261002_th.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg",
+    "credito": "NASA"
+   },
+   "everydayPt": [
+    "Inundações atingiram muitas cidades tailandesas.",
+    "Bangkok tem muita chuva.",
+    "Fazendas perderam colheitas por causa de inundações.",
+    "As pessoas precisam da ajuda da Cruz Vermelha.",
+    "Inundações vieram de um sistema de baixa pressão.",
+    "Inundações deixaram algumas áreas muito úmidas."
+   ],
+   "realPt": [
+    "Inundações atingiram a Tailândia, afetando mais de 4 milhões de pessoas.",
+    "Bangkok recebeu quase 300 milímetros de chuva em 48 horas.",
+    "Inundações danificaram cerca de 270.000 hectares de terras agrícolas.",
+    "A Federação Internacional das Sociedades da Cruz Vermelha e do Crescente Vermelho forneceu ajuda.",
+    "Imagens da NASA mostram áreas inundadas perto do rio Bang Pakong.",
+    "Algumas inundações resultaram de um sistema de baixa pressão que estagnou sobre a área.",
+    "O sistema trouxe chuvas especialmente intensas para a região.",
+    "Inundações ocorreram em 50 províncias, causando dezenas de mortes.",
+    "Inundações também afetaram áreas agrícolas e instalações de aquicultura."
+   ]
+  }
+ ],
+ "descartadas": [
+  "Before Computer Science Became a Boys’ Club, Margaret Hamilton Wrote the Code (sobrou pouco depois da conferência (4/4))"
+ ]
+}
