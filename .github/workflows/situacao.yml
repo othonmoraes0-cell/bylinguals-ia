@@ -1,0 +1,45 @@
+name: Situação do Portal
+
+# Retrato do trabalho do robô no Portal: a fila de tarefas e quanto de cada livro já foi traduzido.
+# Só leitura. O Portal reconhece este repositório pelo token OIDC do GitHub (sem senha). Rode em "Run workflow".
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: situacao-do-portal
+  cancel-in-progress: true
+
+jobs:
+  ler:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SITE_URL: ${{ vars.SITE_URL || 'https://www.bylinguals.com.br' }}
+    steps:
+      - name: Ler a situação
+        run: |
+          TOKEN=$(curl -sS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=bylinguals-portal" | python3 -c 'import sys,json;print(json.load(sys.stdin)["value"])')
+          STATUS=$(curl -sS -o situacao.json -w "%{http_code}" -H "Authorization: Bearer $TOKEN" "$SITE_URL/api/robo/situacao") || STATUS=000
+          echo "HTTP $STATUS"
+          if [ "$STATUS" != "200" ]; then cat situacao.json; echo "::error title=Portal::HTTP $STATUS"; exit 1; fi
+          python3 - <<'PY'
+          import json, os
+          s = json.load(open("situacao.json"))
+          L = [f"## Situação do robô no Portal ({s['geradoEm'][:16].replace('T', ' ')} UTC)", "", "### Fila", "", "| Tipo | Estado | Quantas |", "|---|---|---|"]
+          L += [f"| {f['tipo']} | {f['estado']} | {f['quantas']} |" for f in s["fila"]]
+          L += ["", "### Tradução dos livros", "", "| Livro | Capítulos | Traduzidos |", "|---|---|---|"]
+          L += [f"| {t['titulo']} | {t['capitulos']} | {t['traduzidos']} |" for t in s["traducao"]]
+          tot = sum(t["capitulos"] for t in s["traducao"]); feitos = sum(min(t["traduzidos"], t["capitulos"]) for t in s["traducao"])
+          L += ["", f"**Total:** {feitos} de {tot} capítulos traduzidos.", "", "### Últimas tarefas", "", "| Tipo | Alvo | Estado | Progresso | Tentativas | Criada | Concluída | Erro / resumo |", "|---|---|---|---|---|---|---|---|"]
+          for r in s["recentes"]:
+              nota = (r["erro"] or r["resumo"] or "").replace("|", "/").replace("\n", " ")
+              L.append(f"| {r['tipo']} | {r['alvo']} | {r['estado']} | {int(r['progresso'] * 100)}% | {r['tentativas']} | {r['criadaEm'][:16]} | {(r['concluidaEm'] or '')[:16]} | {nota} |")
+          texto = "\n".join(L)
+          print(texto)
+          open(os.environ["GITHUB_STEP_SUMMARY"], "a").write(texto + "\n")
+          print(f"::notice title=Tradução::{feitos} de {tot} capítulos traduzidos")
+          PY
