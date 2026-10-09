@@ -10,6 +10,10 @@ on:
         description: "Só para testar o robô: link de um áudio/vídeo (não mexe no Portal)"
         required: false
         default: ""
+      testar_chamada:
+        description: "Só para testar: o Portal tenta chamar o robô (confere a chave ROBO_DISPARO_TOKEN da Vercel)"
+        type: boolean
+        default: false
       traducao_de_teste:
         description: "Só para testar o tradutor do guia: palavras ou frases separadas por | (não mexe no Portal)"
         required: false
@@ -37,8 +41,10 @@ jobs:
         id: fila
         run: |
           TOKEN=$(curl -sS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=bylinguals-portal" | python3 -c 'import sys,json;print(json.load(sys.stdin)["value"])')
-          STATUS=$(curl -sS -o fila.json -w "%{http_code}" -X GET -H "Authorization: Bearer $TOKEN" "$SITE_URL/api/robo/tarefas/fila") || STATUS=000
+          Q=""; if [ "${{ inputs.testar_chamada }}" = "true" ]; then Q="?testar=1"; fi
+          STATUS=$(curl -sS -o fila.json -w "%{http_code}" -X GET -H "Authorization: Bearer $TOKEN" "$SITE_URL/api/robo/tarefas/fila$Q") || STATUS=000
           echo "HTTP $STATUS"; cat fila.json || true; echo
+          echo "::notice title=Portal::HTTP $STATUS $(head -c 400 fila.json 2>/dev/null)"
           if [ -n "${{ inputs.url_de_teste }}${{ inputs.traducao_de_teste }}" ]; then echo "trabalho=sim" >> "$GITHUB_OUTPUT"; exit 0; fi
           if [ "$STATUS" = "200" ] && grep -q '"pendentes":0' fila.json; then echo "trabalho=nao" >> "$GITHUB_OUTPUT"; else echo "trabalho=sim" >> "$GITHUB_OUTPUT"; fi
 
