@@ -65,7 +65,7 @@ TEMAS = {
     "economy": ("Economy & Personal Finance", {
         "US": [("The New York Times", NYT + "Economy.xml"), ("The New York Times", NYT + "YourMoney.xml"), ("NPR", NPR.format(1017)), ("CNBC", "https://www.cnbc.com/id/21324812/device/rss/rss.html"), ("CBS News", CBS.format("moneywatch"))],
         "World": [("BBC", BBC.format("business")), ("The Guardian", GUA.format("business/economics")), ("DW", "https://rss.dw.com/rdf/rss-en-bus")],
-        "Brazil": [("g1", G1.format("economia")), ("InfoMoney", "https://www.infomoney.com.br/feed/"), ("Folha de S.Paulo", FOLHA.format("mercado")), ("CNN Brasil", CNNBR.format("economia"))],
+        "Brazil": [("g1", G1.format("economia")), ("InfoMoney", "https://www.infomoney.com.br/economia/feed/"), ("InfoMoney", "https://www.infomoney.com.br/minhas-financas/feed/"), ("Folha de S.Paulo", FOLHA.format("mercado")), ("CNN Brasil", CNNBR.format("economia"))],
     }),
     "business": ("Business", {
         "US": [("The New York Times", NYT + "Business.xml"), ("NPR", NPR.format(1006)), ("CNBC", "https://www.cnbc.com/id/100003114/device/rss/rss.html"), ("ABC News", ABC.format("moneyheadlines")), ("The New York Times", NYT + "Technology.xml")],
@@ -107,7 +107,8 @@ REGIOES = ("US", "World", "Brazil")
 # Título que não é notícia: chamada para leitores, galeria de fotos, coluna assinada ("… | Fulano de Tal"), homenagem.
 NAO_E_NOTICIA = re.compile(
     r"(send us|your questions|tell us|in pictures|week in images|photos of|^watch|^listen|quiz|crossword|an appreciation|"
-    r"\| [A-ZÀ-Ú][a-zà-ú]+ [A-ZÀ-Ú]|what to watch|best of the week|newsletter|^veja (fotos|vídeo)|ao vivo|horóscopo)",
+    r"\| [A-ZÀ-Ú][a-zà-ú]+ [A-ZÀ-Ú]|what to watch|best of the week|newsletter|^veja (fotos|vídeo)|ao vivo|horóscopo|globoesporte\.com|"
+    r"\b\w+ x \w+ - campeonato)",
     re.I,
 )
 # Link que não é notícia (opinião, ao vivo, vídeo, podcast, quiz, newsletter).
@@ -208,6 +209,16 @@ def mesmo_assunto(a, b):
     titulos = tka & tkb
     jaccard = len(comuns) / max(1, len(ka | kb))
     return len(nomes_comuns) >= 2 and len(comuns) >= 3 and jaccard >= 0.12 and ((len(especificos) >= 1 and len(titulos) >= 1) or len(titulos) >= 3)
+
+
+def parecido(a, b):
+    """Para não repetir o acontecimento (mais largo que `mesmo_assunto`): o mesmo nome próprio específico e o título parecido."""
+    if mesmo_assunto(a, b):
+        return True
+    _, na, _, tka = perfil(a)
+    _, _, nb_txt, tkb = perfil(b)
+    especificos = {p.lower() for p in na if p.lower() in nb_txt} - NOMES_GENERICOS
+    return len(especificos) >= 2 and len(tka & tkb) >= 2
 
 
 # ------------------------------------------------------------------ IA
@@ -448,7 +459,7 @@ def grupos_da_regiao(itens, quantos, apoio_extra=()):
     grupos, usados = [], set()
     pool = list(itens) + [x for x in apoio_extra if x["link"] not in {i["link"] for i in itens}]
     for p in itens:
-        if len(grupos) >= quantos or p["link"] in usados:
+        if len(grupos) >= quantos or p["link"] in usados or any(parecido(p, f) for g in grupos for f in g["fontes"]):
             continue
         apoio = [it for it in pool if it["link"] != p["link"] and it["link"] not in usados and mesmo_assunto(p, it)]
         escolhidas, vistos = [p], {p["veiculo"]}
@@ -473,7 +484,7 @@ def notas_da_regiao(itens, usados, quantos):
     for it in sorted(itens, key=lambda x: (x["posicao"], por_veiculo.get(x["veiculo"], 0))):
         if len(escolhidas) >= quantos:
             break
-        if it["link"] in usados or any(mesmo_assunto(it, e) for e in escolhidas) or por_veiculo.get(it["veiculo"], 0) >= 2:
+        if it["link"] in usados or any(parecido(it, e) for e in escolhidas) or por_veiculo.get(it["veiculo"], 0) >= 2:
             continue
         por_veiculo[it["veiculo"]] = por_veiculo.get(it["veiculo"], 0) + 1
         escolhidas.append(it)
@@ -540,7 +551,7 @@ def planejar():
     plano = {}
 
     def repetido(it):
-        return it["link"] in links_usados or any(mesmo_assunto(it, e) for e in escolhidos)
+        return it["link"] in links_usados or any(parecido(it, e) for e in escolhidos)
 
     for chave in ORDEM_DE_ESCOLHA:
         nome, regioes = TEMAS[chave]
@@ -550,7 +561,7 @@ def planejar():
             livres = [it for it in itens if not repetido(it)]
             grupos, usados = grupos_da_regiao(livres, POR_REGIAO, apoio_da_regiao(regiao))
             for g in grupos:
-                escolhidos.append(g["fontes"][0])
+                escolhidos.extend(g["fontes"])
                 links_usados.update(f["link"] for f in g["fontes"])
             links_usados.update(usados)
             notas = notas_da_regiao([it for it in livres if not repetido(it)], usados, POR_REGIAO * 2)
