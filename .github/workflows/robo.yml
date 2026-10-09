@@ -68,7 +68,10 @@ jobs:
         if: steps.fila.outputs.trabalho == 'sim'
         run: |
           (command -v ffmpeg >/dev/null) || (sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg)
-          pip install -q -r robo/requirements.txt
+          # Tudo junto e de uma vez (whisper e tradutor), para nenhuma biblioteca trocar de versão no meio da rodada.
+          pip install -q torch==2.5.1 --index-url https://download.pytorch.org/whl/cpu
+          pip install -q -r robo/requirements.txt -r robo/requirements-traducao.txt
+          python -c "import faster_whisper, transformers, huggingface_hub, tokenizers; print('bibliotecas ok', huggingface_hub.__version__, tokenizers.__version__, transformers.__version__)"
 
       - name: Trabalhar
         if: steps.fila.outputs.trabalho == 'sim'

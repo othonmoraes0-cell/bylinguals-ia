@@ -1,2 +1,7 @@
 faster-whisper==1.1.0
 requests==2.32.3
+# Versões presas (09/10/2026): o faster-whisper aceitava a huggingface_hub mais nova e o transformers do tradutor
+# exige < 1.0; instalar um depois do outro trocava a biblioteca no meio da rodada ("cannot import name
+# XetAuthorizationError"). Agora tudo é instalado junto, uma vez, com as mesmas versões.
+huggingface_hub==0.26.5
+tokenizers==0.20.3
