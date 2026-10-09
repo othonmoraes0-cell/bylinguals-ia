@@ -1,0 +1,147 @@
+name: Dicionário Bylinguals
+
+# O robô do dicionário (09/10/2026). Grátis: repositório público, minutos do GitHub Actions sem custo.
+#  - base: lê o Wiktionary extraído (kaikki.org) e manda ao Portal as palavras mais usadas, phrasal verbs e idioms.
+#  - enriquecer: várias máquinas escrevem os verbetes no estilo Bylinguals com um modelo aberto (llama.cpp).
+#  - sugestoes: prepara só as palavras que alunos e professores sugeriram (o Portal chama na hora).
+on:
+  schedule:
+    - cron: "23 */6 * * *"
+  workflow_dispatch:
+    inputs:
+      modo:
+        description: "base | enriquecer | sugestoes"
+        default: "enriquecer"
+      maquinas:
+        description: "Quantas máquinas escrevem ao mesmo tempo (enriquecer)"
+        default: "10"
+      palavras:
+        description: "Quantas palavras simples na base (as expressões vêm além disso)"
+        default: "25000"
+
+permissions:
+  id-token: write # token OIDC: é assim que o Portal sabe que é este robô (sem senha)
+  contents: read
+
+jobs:
+  plano:
+    runs-on: ubuntu-latest
+    outputs:
+      modo: ${{ steps.p.outputs.modo }}
+      maquinas: ${{ steps.p.outputs.maquinas }}
+    steps:
+      - id: p
+        run: |
+          MODO="${{ inputs.modo || 'enriquecer' }}"
+          N="${{ inputs.maquinas || '10' }}"
+          if [ "$MODO" = "sugestoes" ]; then N=1; fi
+          if [ "$MODO" = "base" ]; then N=1; fi
+          echo "modo=$MODO" >> "$GITHUB_OUTPUT"
+          echo "maquinas=$(python3 -c "import json;print(json.dumps(list(range(1, min(int('$N'), 16) + 1))))")" >> "$GITHUB_OUTPUT"
+
+  base:
+    needs: plano
+    if: needs.plano.outputs.modo == 'base'
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    concurrency:
+      group: dicionario-base
+      cancel-in-progress: false
+    env:
+      SITE_URL: ${{ vars.SITE_URL || 'https://www.bylinguals.com.br' }}
+      LIMITE_PALAVRAS: ${{ inputs.palavras || '25000' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -q requests==2.32.3 wordfreq==3.1.1
+      - name: Base aberta
+        run: python robo/dicionario.py base
+
+  escrever:
+    needs: plano
+    if: needs.plano.outputs.modo != 'base'
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    strategy:
+      fail-fast: false
+      matrix:
+        maquina: ${{ fromJson(needs.plano.outputs.maquinas) }}
+    concurrency:
+      group: dicionario-${{ needs.plano.outputs.modo }}-${{ matrix.maquina }}
+      cancel-in-progress: false
+    env:
+      SITE_URL: ${{ vars.SITE_URL || 'https://www.bylinguals.com.br' }}
+      MAQUINA: ${{ matrix.maquina }}
+      LIMITE_HORAS: ${{ needs.plano.outputs.modo == 'sugestoes' && '1' || '5.2' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Tem trabalho?
+        id: fila
+        run: |
+          TOKEN=$(curl -sS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=bylinguals-portal" | python3 -c 'import sys,json;print(json.load(sys.stdin)["value"])')
+          STATUS=$(curl -sS -o situacao.json -w "%{http_code}" -H "Authorization: Bearer $TOKEN" "$SITE_URL/api/robo/situacao") || STATUS=000
+          echo "HTTP $STATUS"
+          python3 - <<'PY'
+          import json, os
+          try:
+              s = json.load(open("situacao.json"))
+              d = s.get("dicionario") or {}
+              base = (d.get("porEstado") or {}).get("BASE", 0)
+              pend = (d.get("sugestoes") or {}).get("PENDENTE", 0)
+              modo = os.environ.get("MODO", "")
+              tem = pend > 0 or (base > 0 and modo != "sugestoes")
+              print(f"BASE={base} sugestoes pendentes={pend} banco={s.get('bancoMb')} MB")
+          except Exception as e:
+              print("sem situação:", e); tem = True
+          open(os.environ["GITHUB_OUTPUT"], "a").write(f"trabalho={'sim' if tem else 'nao'}\n")
+          PY
+        env:
+          MODO: ${{ needs.plano.outputs.modo }}
+
+      - uses: actions/setup-python@v5
+        if: steps.fila.outputs.trabalho == 'sim'
+        with:
+          python-version: "3.11"
+
+      - name: llama.cpp (cache)
+        if: steps.fila.outputs.trabalho == 'sim'
+        id: cache-llama
+        uses: actions/cache@v4
+        with:
+          path: llama-bin
+          key: llama-server-${{ runner.os }}-v1
+
+      - name: llama.cpp (compilado aqui, só o servidor)
+        if: steps.fila.outputs.trabalho == 'sim' && steps.cache-llama.outputs.cache-hit != 'true'
+        run: |
+          git clone --depth 1 https://github.com/ggml-org/llama.cpp llama
+          cmake -S llama -B llama/build -DLLAMA_CURL=OFF -DGGML_NATIVE=OFF -DGGML_AVX2=ON -DGGML_FMA=ON -DGGML_F16C=ON -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Release > /dev/null
+          cmake --build llama/build --target llama-server -j "$(nproc)" > /dev/null
+          mkdir -p llama-bin && cp llama/build/bin/llama-server llama-bin/
+
+      - name: Modelo (cache)
+        if: steps.fila.outputs.trabalho == 'sim'
+        id: cache-modelo
+        uses: actions/cache@v4
+        with:
+          path: modelo.gguf
+          key: qwen2.5-7b-instruct-q4km-v1
+
+      - name: Baixar o modelo
+        if: steps.fila.outputs.trabalho == 'sim' && steps.cache-modelo.outputs.cache-hit != 'true'
+        run: curl -sSL --retry 3 -o modelo.gguf "https://huggingface.co/bartowski/Qwen2.5-7B-Instruct-GGUF/resolve/main/Qwen2.5-7B-Instruct-Q4_K_M.gguf" && ls -lh modelo.gguf
+
+      - name: Escrever os verbetes
+        if: steps.fila.outputs.trabalho == 'sim'
+        run: |
+          pip install -q requests==2.32.3
+          ./llama-bin/llama-server -m modelo.gguf -c 4096 -t $(nproc) --port 8080 > servidor.log 2>&1 &
+          for i in $(seq 1 150); do curl -s localhost:8080/health | grep -q ok && break; sleep 2; done
+          python robo/dicionario.py ${{ needs.plano.outputs.modo }}
+
+      - name: Registro do servidor
+        if: failure()
+        run: tail -n 40 servidor.log || true
