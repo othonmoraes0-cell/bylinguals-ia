@@ -4,13 +4,15 @@ Robô de IA do Portal Bylinguals.
 Pega tarefas na fila do Portal e faz no processador da máquina do GitHub, de graça:
  - legenda de vídeo e sincronia de audiobook: ouve o áudio com o Whisper (faster-whisper) e devolve as falas com o tempo;
  - guia de palavras (livro ou vídeo): traduz cada palavra e a frase onde ela aparece (inglês → português do Brasil,
-   modelo aberto OPUS-MT da Universidade de Helsinque).
+   modelo aberto OPUS-MT da Universidade de Helsinque);
+ - tradução do livro: traduz cada capítulo, frase a frase, para o "Traduzir esta página" do Kindle (EN | PT lado a lado).
 Para de pegar tarefa nova depois de ~5 h, para caber no limite de 6 h de uma execução do GitHub Actions; o que sobrar
 fica para a próxima rodada.
 """
 
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -201,12 +203,91 @@ def teste_traducao(texto):
     print(f"::notice title=Teste do tradutor::({TRADUTOR.get('prefixo') or 'sem prefixo'}; {time.time() - comeco:.0f} s) " + " ; ".join(pares)[:3500], flush=True)
 
 
+# ---------------------------------------------------------------- tradução do livro (Kindle: EN | PT lado a lado)
+
+_ABREV = ("Mr", "Mrs", "Ms", "Dr", "St", "Jr", "Sr", "Prof", "Capt", "Col", "Gen", "Lt", "Mt", "vs", "etc", "No")
+_CORTE = re.compile(r'(?:(?<=[.!?])|(?<=[.!?][\u201d"\u2019)]))\s+(?=[\u201c"\u2018(\[]?[A-Z0-9])')
+
+
+def frases_do_paragrafo(p):
+    """Frases de um parágrafo (o tradutor trabalha melhor por frase). Frase longa demais é cortada nas vírgulas."""
+    pedacos = []
+    for f in _CORTE.split(p.strip()):
+        f = f.strip()
+        if not f:
+            continue
+        # "Mr. Smith" não é fim de frase: junta de volta.
+        if pedacos and pedacos[-1].rstrip().split(" ")[-1].rstrip(".") in _ABREV and pedacos[-1].rstrip().endswith("."):
+            pedacos[-1] += " " + f
+        else:
+            pedacos.append(f)
+    saida = []
+    for f in pedacos:
+        palavras = f.split()
+        if len(palavras) <= 90:
+            saida.append(f)
+            continue
+        atual = []
+        for parte in re.split(r"(?<=[,;:])\s+", f):
+            if atual and len(" ".join(atual + [parte]).split()) > 70:
+                saida.append(" ".join(atual))
+                atual = []
+            atual.append(parte)
+        if atual:
+            saida.append(" ".join(atual))
+    return saida
+
+
+def traduzir_ordenado(textos, ao_progredir=None):
+    """Traduz em lotes de tamanho parecido (bem mais rápido) e devolve na ordem original."""
+    ordem = sorted(range(len(textos)), key=lambda i: len(textos[i]))
+    feitos = traduzir([textos[i] for i in ordem], lote=24, ao_progredir=ao_progredir)
+    saida = [""] * len(textos)
+    for i, t in zip(ordem, feitos):
+        saida[i] = t
+    return saida
+
+
+def fazer_traducao(t):
+    capitulos = t.get("capitulos") or []
+    total = sum(len(frases_do_paragrafo(p)) for c in capitulos for p in c["paragrafos"]) or 1
+    print(f"Tarefa {t['id']}: {t.get('descricao', '')} — {total} frases", flush=True)
+    comeco = time.time()
+    feitas = 0
+    enviados = 0
+    marca = {"em": time.time()}
+    for c in capitulos:
+        if time.time() - INICIO > LIMITE_PARA_COMECAR + 1800:
+            break  # o que faltar o Portal pede de novo
+        frases_por_par = [frases_do_paragrafo(p) for p in c["paragrafos"]]
+        todas = [f for fs in frases_por_par for f in fs]
+        trad = traduzir_ordenado(todas) if todas else []
+        it = iter(trad)
+        paragrafos_pt = [" ".join(next(it) for _ in fs).strip() for fs in frases_por_par]
+        r = portal("POST", f"/api/robo/tarefas/{t['id']}/resultado", {"traducaoDoCapitulo": {"capitulo": c["capitulo"], "paragrafos": paragrafos_pt}})
+        print(f"  capítulo {c['capitulo']}: {len(todas)} frases → Portal HTTP {r.status_code} {r.text[:200]}", flush=True)
+        if r.status_code == 200:
+            enviados += 1
+        feitas += len(todas)
+        if time.time() - marca["em"] > 45:
+            marca["em"] = time.time()
+            try:
+                portal("POST", f"/api/robo/tarefas/{t['id']}/progresso", {"fracao": min(0.99, feitas / total)}, tentativas=1)
+            except Exception:  # noqa: BLE001
+                pass
+    r = portal("POST", f"/api/robo/tarefas/{t['id']}/resultado", {"traducaoConcluida": {"capitulos": enviados}})
+    aviso(f"{t['tipo']} {t['id']}: {enviados}/{len(capitulos)} capítulos, {feitas} frases em {time.time() - comeco:.0f} s → Portal HTTP {r.status_code} {r.text[:200]}")
+
+
 # ---------------------------------------------------------------- tarefas
 
 
 def fazer(t):
     if t.get("tipo", "").startswith("GUIA_"):
         fazer_guia(t)
+        return
+    if t.get("tipo") == "TRADUCAO_LIVRO":
+        fazer_traducao(t)
         return
     print(f"Tarefa {t['id']}: {t['tipo']} — {t.get('descricao', '')}", flush=True)
     with tempfile.TemporaryDirectory() as pasta:
