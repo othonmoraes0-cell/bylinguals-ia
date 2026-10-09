@@ -1,110 +1,110 @@
 # Feeds do Jornal
 
-- **Politics & Elections · US**: 103 itens, 3 completas, 0 notas
+- **Politics & Elections · US**: 3 completas, 0 notas
+  - COMPLETA (CBS News, The New York Times, Fox News): Vance says he wouldn't watch livestream of Fort Hood shooter's execution
   - COMPLETA (Fox News, ABC News, The New York Times, CBS News): Trump says Rogers 'completely obliterated' El-Sayed in debate
-  - COMPLETA (Fox News, CBS News, CNBC, The New York Times): Trump sets up committee to investigate Fed Governor Lisa Cook over mortgage fraud allegations
-  - COMPLETA (NPR, The New York Times, CBS News): Trump's War in Iran in spotlight ahead of midterms
-- **Politics & Elections · World**: 281 itens, 3 completas, 0 notas
-  - COMPLETA (The Guardian, France 24, BBC, The New York Times, DW, Al Jazeera): ICJ judge Navi Pillay wins Nobel peace prize for promoting international law
-  - COMPLETA (The Guardian, Al Jazeera, BBC): Isaias strengthens to become first Atlantic hurricane of 2026 season
-  - COMPLETA (DW, France 24, Al Jazeera): US imposes sanctions aiming to 'dismantle' International Criminal Court
-- **Politics & Elections · Brazil**: 190 itens, 3 completas, 0 notas
+  - COMPLETA (Fox News, The New York Times, CBS News, CNBC): Trump sets up committee to investigate Fed Governor Lisa Cook over mortgage fraud allegations
+- **Politics & Elections · World**: 3 completas, 0 notas
+  - COMPLETA (France 24, The New York Times, The Guardian): Navi Pillay awarded Peace Prize: 'Lifetime spent fighting for what's right & to uphold human rights'
+  - COMPLETA (BBC, The New York Times, France 24, Al Jazeera): Navi Pillay, former UN human rights chief, wins Nobel Peace Prize
+  - COMPLETA (DW, France 24, Al Jazeera, The New York Times): US imposes sanctions aiming to 'dismantle' International Criminal Court
+- **Politics & Elections · Brazil**: 3 completas, 0 notas
   - COMPLETA (BBC News Brasil, Folha de S.Paulo, g1, Exame): Quem está à frente nas pesquisas para presidente no 2º turno das Eleições 2026? Veja Lula x Flávio Bolsonaro n
-  - COMPLETA (Folha de S.Paulo, g1, InfoMoney): Mendonça e Kassio mandam tirar vídeos em que Lula e Janja falam em corte de ações sociais por Flávio
   - COMPLETA (BBC News Brasil, Folha de S.Paulo, g1): Por que Douglas Ruas deve se tornar governador do Rio dias depois do 1º turno
-- **Economy & Personal Finance · US**: 101 itens, 1 completas, 2 notas
+  - COMPLETA (Folha de S.Paulo, g1, Poder360): Lula retomará campanha com caminhada no DF 5 dias depois do primeiro turno
+- **Economy & Personal Finance · US**: 1 completas, 2 notas
   - COMPLETA (The New York Times, NPR, CBS News): Hiring Slows as U.S. Jobs Report Shows Labor Market Shifting Into Lower Gear
   - NOTA (The New York Times): Highest Mortgage Rates in 3 Years Chills the Housing Market
   - NOTA (The New York Times): Adding a Child to Your Car Insurance? Here Are Ways to Hold Down the Costs.
-- **Economy & Personal Finance · World**: 74 itens, 0 completas, 3 notas
+- **Economy & Personal Finance · World**: 0 completas, 3 notas
   - NOTA (BBC): Burnham promises to curb non-compete rules in job contracts
   - NOTA (DW): Finland, the world's happiest nation, faces a glum winter
   - NOTA (BBC): Ex-Deutsche Bank trader jailed for rigging rates has conviction overturned
-- **Economy & Personal Finance · Brazil**: 189 itens, 3 completas, 0 notas
-  - COMPLETA (g1, Folha de S.Paulo, Exame): Governo zera tributos sobre gasolina e publica MP que libera R$ 7,5 bilhões para segurar preço do diesel
-  - COMPLETA (InfoMoney, Folha de S.Paulo, g1): Nunes Marques e Mendonça mandam retirar posts de Lula e aliados com críticas a Flávio
-  - COMPLETA (Folha de S.Paulo, BBC News Brasil, g1): Flávio Bolsonaro lidera votação no 1º turno nas 10 cidades que mais perderam empregos no Brasil
-- **Business · US**: 122 itens, 3 completas, 0 notas
-  - COMPLETA (The New York Times, CBS News, CNBC): Trump Sends Obamacare ‘Refund’ Checks Ahead of Midterm Elections
-  - COMPLETA (CNBC, The New York Times, Fox News, CBS News): Trump appoints committee to investigate statements by the Fed's Lisa Cook
-  - COMPLETA (The New York Times, The Hollywood Reporter, CBS News): What to Know About the Facebook Whistle-Blowing Case Depicted in ‘The Social Reckoning’
-- **Business · World**: 90 itens, 0 completas, 3 notas
-  - NOTA (The Guardian): Trump establishes committee to investigate Fed governor Lisa Cook
-  - NOTA (BBC): Prize-winning image which sparked backlash was AI-generated, Nikon rules
-  - NOTA (DW): Finland, the world's happiest nation, faces a glum winter
-- **Business · Brazil**: 210 itens, 3 completas, 0 notas
-  - COMPLETA (Folha de S.Paulo, BBC News Brasil, g1): Flávio Bolsonaro lidera votação no 1º turno nas 10 cidades que mais perderam empregos no Brasil
-  - COMPLETA (Exame, BBC News Brasil, Poder360, g1, Folha de S.Paulo): Flávio Bolsonaro amplia apoios, mas isso garante votos? Veja o que aconteceu em 2022
-  - COMPLETA (Exame, Folha de S.Paulo, g1): Governo zera impostos federais da gasolina a duas semanas do 2º turno das eleições
-- **Science · US**: 129 itens, 3 completas, 0 notas
+- **Economy & Personal Finance · Brazil**: 0 completas, 3 notas
+  - NOTA (InfoMoney): Forte terremoto de magnitude 8,0 é sentido no Panamá, diz Serviço Geológico dos EUA
+  - NOTA (g1): Trump cria comitê para investigar Lisa Cook, diretora do Fed, diz Casa Branca
+  - NOTA (InfoMoney): Quadros de Renoir roubados de museu na França são encontrados após um mês
+- **Business · US**: 3 completas, 0 notas
+  - COMPLETA (CNBC, The New York Times, ABC News): Trump Media advisor Katie Zacharia offered White House press secretary role
+  - COMPLETA (CNBC, CBS News, The New York Times): Trump created a committee to dig into the Fed's Lisa Cook. What is it and what comes next?
+  - COMPLETA (CNBC, The New York Times, NPR): ChatGPT for Teens is not necessarily 'safer than the previous version,' Common Sense Media finds
+- **Business · World**: 0 completas, 3 notas
+  - NOTA (The Guardian): ‘People are feeling the real impacts’: influencers are targeting private equity with satire and rage
+  - NOTA (BBC): Anthropic bans users from being 'cruel' to its AI systems
+  - NOTA (DW): How a multibillion-dollar oilfield has ignited the UK-Argentina feud over the Falklands
+- **Business · Brazil**: 0 completas, 3 notas
+  - NOTA (Exame): A IA já pode estar ajudando na escalação do seu time e você não percebeu
+  - NOTA (g1): Grosseria tem limite até para a IA: Anthropic quer barrar abusos e autoriza Claude a encerrar conversas
+  - NOTA (Exame): Networking não é LinkedIn: a lição que a presidente da EAF levou de um programa para conselheiras
+- **Science · US**: 3 completas, 0 notas
   - COMPLETA (The New York Times, CBS News, ABC News): A Lab Worker’s Death Is Raising Plague Fears in Russia. What Do Experts Want to Know?
   - COMPLETA (The New York Times, NPR, Smithsonian): Jonathan the Giant Tortoise Is 194 Years Old. He Just Had His Genome Sequenced.
   - COMPLETA (The New York Times, NPR, CNBC): Nobel Prize in Physics Is Awarded to Francis Halzen for Work on Neutrinos
-- **Science · World**: 47 itens, 1 completas, 2 notas
-  - COMPLETA (BBC, The Guardian, DW, Al Jazeera): Hurricane Isaias strengthens to a major category three storm
+- **Science · World**: 0 completas, 3 notas
   - NOTA (The Guardian): Astronomers detect mysterious burst of energy from a galaxy far, far away
-  - NOTA (BBC): Prize-winning image which sparked backlash was AI-generated, Nikon rules
-- **Science · Brazil**: 209 itens, 0 completas, 3 notas
-  - NOTA (g1): Quase todo mundo vira naturalmente para a esquerda ao caminhar, e ainda não fazemos ideia do porquê
+  - NOTA (The Guardian): Teenager becomes first person to have testicular tissue transplant in UK
+  - NOTA (BBC): 'Tropical jungle' of wallabies, porcupines and parrots must move after neighbours complain
+- **Science · Brazil**: 0 completas, 3 notas
   - NOTA (Folha de S.Paulo): ONU aponta riscos de eventual uso de tecnologia para ler a mente humana
   - NOTA (Jornal da USP): Músculo e exercício físico não saudável são temas de oficina na USP de Ribeirão
-- **Health · US**: 97 itens, 1 completas, 2 notas
-  - COMPLETA (The New York Times, CBS News, ABC News): A Lab Worker’s Death Is Raising Plague Fears in Russia. What Do Experts Want to Know?
+  - NOTA (Pesquisa FAPESP): O milagre da multiplicação de referências bibliográficas (fantasmas)
+- **Health · US**: 0 completas, 3 notas
   - NOTA (The New York Times): Private Medicare Plans Are Raising Costs And Forcing Millions To Find New Insurance
   - NOTA (NPR): Did Russia play by the rules in reporting lab worker's death?
-- **Health · World**: 85 itens, 0 completas, 3 notas
+  - NOTA (CBS News): Can GLP-1 drugs help people stop throwing away their money?
+- **Health · World**: 0 completas, 3 notas
   - NOTA (BBC): Autism, ADHD and mental health review: What you need to know
   - NOTA (The Guardian): Second UK health body drops Israeli drug firm after activist pressure
   - NOTA (WHO): WHO Director-General visits Jordan to recognize strong collaboration on health system delivery, emergency reli
-- **Health · Brazil**: 209 itens, 0 completas, 3 notas
+- **Health · Brazil**: 0 completas, 3 notas
   - NOTA (g1): 'Suplementos não tratam resistência à insulina e podem atrasar diagnóstico e tratamento', alerta Anvisa
   - NOTA (Folha de S.Paulo): SUS faz transporte aéreo de sangue raro do Ceará a Minas para atender paciente em estado grave
   - NOTA (g1): 'Ciência Aberta': centro que abriga o Sirius recebe público para apresentar curiosidades e atrações da ciência
-- **Sports · US**: 56 itens, 1 completas, 2 notas
+- **Sports · US**: 1 completas, 2 notas
   - COMPLETA (CBS Sports, Fox News, ABC News): Cowboys' Jerry Jones expresses interest in making trades despite embarrassing loss to Buccaneers
   - NOTA (CBS Sports): Ravens rule out Lamar Jackson for Week 5 matchup vs. Falcons due to ankle injury
   - NOTA (Fox News): We're Going Back To Cleveland: 3 Takeaways From Guardians' Game 4 Win Over White Sox
-- **Sports · World**: 62 itens, 1 completas, 2 notas
+- **Sports · World**: 1 completas, 2 notas
   - COMPLETA (BBC, The Guardian, Al Jazeera): What reception awaits Man City at Anfield?
   - NOTA (BBC): Verstappen on sprint pole after another settings issue
   - NOTA (BBC): Fury-Joshua tickets priced up to £13,000 sell out in one hour
-- **Sports · Brazil**: 174 itens, 1 completas, 2 notas
-  - COMPLETA (Folha de S.Paulo, BBC News Brasil, g1): Centrão aposta em vitória de Flávio Bolsonaro para liberar bets após segundo turno
-  - NOTA (ge): Montoro participa de treino e pode retornar ao Botafogo contra o Coritiba, no Brasileirão
-  - NOTA (Folha de S.Paulo): Astro da NBA Wembanyama apoia protestos estudantis na França
-- **Culture · US**: 121 itens, 1 completas, 2 notas
-  - COMPLETA (The New York Times, NPR, CBS News, The Hollywood Reporter): Aaron Sorkin on ‘The Social Reckoning’
+- **Sports · Brazil**: 0 completas, 3 notas
+  - NOTA (ge): Estrela do UFC BJJ abre mão do título para focar na mudança para o MMA
+  - NOTA (Folha de S.Paulo): Além do futebol, Manchester City impulsionou uma transformação urbana
+  - NOTA (ge): Brusque x Paysandu - Campeonato Brasileiro Série C 2026 - globoesporte.com
+- **Culture · US**: 0 completas, 3 notas
   - NOTA (NPR): Five children are taken from their parents in 'Fjord,' which won top prize at Cannes
   - NOTA (CBS News): "Star Wars" lightsaber used in "I am your father" duel could sell for $1 million
-- **Culture · World**: 83 itens, 2 completas, 1 notas
-  - COMPLETA (DW, BBC, The Guardian, Al Jazeera): 2026 Nobel Prize winner Anne Carson: Where to start reading
+  - NOTA (The New York Times): His Unmarked Grave Lay Forgotten for 200 Years. They Had to Fix That.
+- **Culture · World**: 1 completas, 2 notas
   - COMPLETA (DW, BBC, Al Jazeera, The Guardian): Manchester City Premier League charges: What do they mean?
-  - NOTA (BBC): Alison Hammond: 'I thought I was having heart attack on air'
-- **Culture · Brazil**: 150 itens, 1 completas, 2 notas
-  - COMPLETA (Folha de S.Paulo, BBC News Brasil, g1): Globo adia sabatinas em horário nobre com Lula e Flávio Bolsonaro no segundo turno
-  - NOTA (Folha de S.Paulo): Robbie Williams retorna ao Brasil e quer mostrar que é o 'mestre do entretenimento'
+  - NOTA (The Guardian): Stark warning – does new footage in Avengers: Endgame reveal the truth about Doctor Doom?
+  - NOTA (BBC): Emotions run high at the round table as Celebrity Traitors banish two players
+- **Culture · Brazil**: 0 completas, 3 notas
   - NOTA (Folha de S.Paulo): Rochelle Jordan transforma herança negra em música de pista no Zig Festival
-- **Space & Earth · US**: 70 itens, 0 completas, 3 notas
+  - NOTA (g1): Árbitro de 75 anos morre após golpe proibido durante luta livre no México; lutador é detido
+  - NOTA (Folha de S.Paulo): Curtas queer incendeiam o Festival do Rio ao debater repressão e masculinidade
+- **Space & Earth · US**: 0 completas, 3 notas
   - NOTA (The New York Times): SpaceX’s Starship Makes It to Orbit for the First Time, but Returns to Earth Early
   - NOTA (The New York Times): As Flood Risk Increases in Himalayas, Nepal Builds More in Vulnerable Areas
   - NOTA (NPR): Navajo environmentalists were offered money to drop opposition to energy project
-- **Space & Earth · World**: 62 itens, 1 completas, 2 notas
-  - COMPLETA (BBC, The Guardian, DW, Al Jazeera): Hurricane Isaias strengthens to a major category three storm
+- **Space & Earth · World**: 1 completas, 2 notas
+  - COMPLETA (BBC, The Guardian, Al Jazeera, DW): Hurricane Isaias strengthens to a major category three storm
   - NOTA (The Guardian): As monarch butterflies migrate for the fall, meet the Chicago woman trying to protect them
   - NOTA (The Guardian): ‘Like an earthquake’: El Niño is coming for California – is the state ready?
-- **Space & Earth · Brazil**: 268 itens, 0 completas, 3 notas
+- **Space & Earth · Brazil**: 0 completas, 3 notas
   - NOTA (g1): Centenária árvore de Florianópolis citada no hino do município não é originária do Brasil, diz pesquisa
   - NOTA (Folha de S.Paulo): Planeta perde vida selvagem, mas casos de sucesso apontam saídas
   - NOTA (g1): Quase todo mundo vira naturalmente para a esquerda ao caminhar, e ainda não fazemos ideia do porquê
-- **Entertainment & Curiosities · US**: 89 itens, 2 completas, 1 notas
-  - COMPLETA (Smithsonian, NPR, The New York Times): Scientists Took a Cheek Swab From the World's Oldest Tortoise. His DNA Could Reveal Hints to Longevity
+- **Entertainment & Curiosities · US**: 1 completas, 2 notas
   - COMPLETA (The New York Times, The Hollywood Reporter, NPR, CBS News): Aaron Sorkin on ‘The Social Reckoning’
   - NOTA (The New York Times): ‘S.N.L.’ Season Premiere: Buckets of Rain, With Jalen Brunson Reigning
-- **Entertainment & Curiosities · World**: 151 itens, 1 completas, 2 notas
+  - NOTA (Variety): Black Bear Acquires Rom-Com ‘Honeymoon / Funeral’ Starring Rebecca Ferguson, Greta Lee and Carrie Coon
+- **Entertainment & Curiosities · World**: 1 completas, 2 notas
   - COMPLETA (BBC, DW, The Guardian): 'Bold and inventive' Canadian poet Anne Carson wins Nobel Literature Prize
   - NOTA (The Guardian): In the Shadows review – true tale of Ramla Ali’s remarkable rise through the boxing ranks is a knockout
   - NOTA (BBC): Alison Hammond: 'I thought I was having heart attack on air'
-- **Entertainment & Curiosities · Brazil**: 150 itens, 1 completas, 2 notas
-  - COMPLETA (Folha de S.Paulo, BBC News Brasil, g1): Globo adia sabatinas em horário nobre com Lula e Flávio Bolsonaro no segundo turno
+- **Entertainment & Curiosities · Brazil**: 0 completas, 3 notas
+  - NOTA (Folha de S.Paulo): Globo define gravação e detalhes do especial de fim de ano de Roberto Carlos
   - NOTA (Folha de S.Paulo): Robbie Williams retorna ao Brasil e quer mostrar que é o 'mestre do entretenimento'
-  - NOTA (Folha de S.Paulo): Rochelle Jordan transforma herança negra em música de pista no Zig Festival
+  - NOTA (g1): Ator de 'Pretty Little Liars' é agredido durante assalto: 'Ameaçaram me matar por um relógio'
