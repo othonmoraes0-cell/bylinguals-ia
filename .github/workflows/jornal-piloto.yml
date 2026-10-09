@@ -18,6 +18,8 @@ jobs:
         include:
           - rotulo: qwen2.5-7b
             url: https://huggingface.co/bartowski/Qwen2.5-7B-Instruct-GGUF/resolve/main/Qwen2.5-7B-Instruct-Q4_K_M.gguf
+          - rotulo: qwen2.5-14b
+            url: https://huggingface.co/bartowski/Qwen2.5-14B-Instruct-GGUF/resolve/main/Qwen2.5-14B-Instruct-Q4_K_M.gguf
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -54,8 +56,8 @@ jobs:
       - name: Guardar o resultado no ramo piloto-jornal
         if: always()
         run: |
-          mkdir -p saida && cp piloto/resultado.md "saida/v2-${{ matrix.rotulo }}.md" 2>/dev/null || echo "sem resultado" > "saida/v2-${{ matrix.rotulo }}.md"
-          cp piloto/resultado.json "saida/v2-${{ matrix.rotulo }}.json" 2>/dev/null || true
+          mkdir -p saida && cp piloto/resultado.md "saida/v3-${{ matrix.rotulo }}.md" 2>/dev/null || echo "sem resultado" > "saida/v3-${{ matrix.rotulo }}.md"
+          cp piloto/resultado.json "saida/v3-${{ matrix.rotulo }}.json" 2>/dev/null || true
           tail -n 40 servidor.log > "saida/${{ matrix.rotulo }}-servidor.log" 2>/dev/null || true
           git config user.name "robo-bylinguals" && git config user.email "robo@users.noreply.github.com"
           for tentativa in 1 2 3 4 5; do

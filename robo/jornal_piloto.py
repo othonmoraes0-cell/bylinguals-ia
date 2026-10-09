@@ -102,7 +102,7 @@ def parecidas(principal, pool):
         outra = palavras_chave(it["titulo"] + " " + it["resumo"])
         comuns = chave & outra
         nomes_comuns = {n for n in nomes if n.lower() in (it["titulo"] + " " + it["resumo"]).lower()}
-        if len(comuns) >= 4 or (len(nomes_comuns) >= 2 and len(comuns) >= 2):
+        if len(nomes_comuns) >= 2 and len(comuns) >= 3:
             saida.append((len(comuns) + 2 * len(nomes_comuns), it))
     saida.sort(key=lambda x: -x[0])
     vistos, final = set(), []
@@ -137,21 +137,17 @@ PROMPT_SISTEMA = (
 
 
 def pedir(fatos, longo, tentativa_extra=""):
-    if longo:
-        tamanhos = ('"everyday": 6 to 8 short sentences (CEFR A2: max 14 words each, common words, simple present and simple past)\n'
-                    '- "real": 8 to 10 sentences (CEFR B1, natural English, with context)')
-    else:
-        tamanhos = ('"everyday": 5 to 6 short sentences (CEFR A2: max 14 words each, common words, simple present and simple past)\n'
-                    '- "real": 6 to 8 sentences (CEFR B1, natural English, the main facts first, then context from BACKGROUND if there is any)')
+    n_every, n_real = (7, 9) if longo else (6, 8)
     usuario = (
         f"{fatos}\n\nWrite a JSON object with exactly these keys:\n"
         '- "section": one of Brazil, World, Science, Health, Sports, Business, Culture, Space & Earth\n'
         '- "headline_everyday": a short headline (max 10 words), simple English\n'
-        f"- {tamanhos}\n"
+        f'- "everyday_sentences": a list of EXACTLY {n_every} sentences for CEFR A2 learners. Each sentence is complete (subject + verb), 8 to 14 words, common words, simple present or simple past. Together they tell the story: what happened, who, where, when, why it matters.\n'
         '- "headline_real": a headline (max 12 words)\n'
-        '- "glossary": a list of 8 objects {"word": an English word or expression that appears in "real", "pt": its meaning in Brazilian Portuguese}\n'
-        '- "sources_used": list of the source names you used\n'
-        f"Everything must be in English except the \"pt\" values. Return only the JSON.{tentativa_extra}"
+        f'- "real_sentences": a list of EXACTLY {n_real} sentences for CEFR B1 learners, natural English, 12 to 22 words each: the main facts first, then what each source adds, then context from BACKGROUND (if any).\n'
+        '- "glossary": a list of EXACTLY 8 objects {"word": an English word or expression that appears in real_sentences, "pt": its meaning in Brazilian Portuguese}\n'
+        "Everything must be in English except the \"pt\" values. If a FACT is in Portuguese, translate it into English. "
+        f"Do not repeat the same fact twice. Return only the JSON.{tentativa_extra}"
     )
     corpo = {
         "messages": [{"role": "system", "content": PROMPT_SISTEMA}, {"role": "user", "content": usuario}],
@@ -169,6 +165,9 @@ def pedir(fatos, longo, tentativa_extra=""):
         dados = json.loads(m.group(0)) if m else {}
     except json.JSONDecodeError:
         dados = {}
+    for chave, lista in (("everyday", "everyday_sentences"), ("real", "real_sentences")):
+        if isinstance(dados.get(lista), list):
+            dados[chave] = " ".join(str(x).strip() for x in dados[lista] if str(x).strip())
     return dados, time.time() - t0, resp.get("usage", {})
 
 
@@ -203,6 +202,8 @@ def conferir(dados, fatos):
         defeitos.append("glossário vazio ou curto")
     if not dados.get("everyday") or not dados.get("real"):
         defeitos.append("faltou uma versão")
+    if len(dados.get("everyday_sentences") or []) < (6 if len(fatos) < 2500 else 7) - 1 or len(dados.get("real_sentences") or []) < 7:
+        defeitos.append("frases de menos")
     return sorted(set(problemas)), defeitos
 
 
@@ -222,7 +223,7 @@ def escrever(fatos, longo):
         problemas, defeitos = conferir(dados, fatos)
         if not problemas and not defeitos:
             break
-        extra = "\nIMPORTANT: your last answer had problems: " + "; ".join(defeitos + problemas) + ". Fix them: English only, only facts from FACTS/BACKGROUND, 8 glossary items."
+        extra = "\nIMPORTANT: your last answer had problems: " + "; ".join(defeitos + problemas) + ". Fix them: English only, only facts from FACTS/BACKGROUND, the exact number of sentences, 8 glossary items."
         print(f"    tentativa {tentativas}: {defeitos + problemas}")
     return dados, problemas, defeitos, round(gasto_total), uso_total, tentativas
 
@@ -293,8 +294,7 @@ def main():
             "",
             "**Glossário:** " + "; ".join(f"{g.get('word')} = {g.get('pt')}" for g in dados.get("glossary", []) if isinstance(g, dict)),
             "",
-            "**Fontes usadas (segundo a IA):** " + ", ".join(map(str, dados.get("sources_used", []))),
-            "",
+
             "<details><summary>Os fatos que a IA recebeu</summary>",
             "",
             fatos[:3000],
