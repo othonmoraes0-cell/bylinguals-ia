@@ -3,7 +3,7 @@ name: Robô de IA
 # Pergunta ao Portal se há legenda ou sincronia para fazer. Repositório público: os minutos do GitHub Actions são grátis.
 on:
   schedule:
-    - cron: "7,22,37,52 * * * *"
+    - cron: "4,19,34,49 * * * *"
   workflow_dispatch:
     inputs:
       url_de_teste:
@@ -73,7 +73,7 @@ jobs:
 
   # O GitHub desliga agendamentos de repositório sem movimento há 60 dias: um commit vazio por mês mantém o robô vivo.
   manter-vivo:
-    if: github.event.schedule == '7,22,37,52 * * * *'
+    if: github.event.schedule == '4,19,34,49 * * * *'
     runs-on: ubuntu-latest
     permissions:
       contents: write

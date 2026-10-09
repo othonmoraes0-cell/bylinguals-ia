@@ -92,6 +92,11 @@ def transcrever(id_tarefa, nome_modelo, arquivo, deslocamento):
     return falas, info.duration
 
 
+def aviso(texto):
+    """Aparece no resumo da execução no GitHub (fácil de conferir sem abrir o registro)."""
+    print(f"::notice title=Robô::{texto[:900]}", flush=True)
+
+
 # ---------------------------------------------------------------- tradução (guia de palavras)
 
 MODELO_DE_TRADUCAO = "Helsinki-NLP/opus-mt-tc-big-en-pt"
@@ -182,6 +187,7 @@ def fazer_guia(t):
         traducoes.append(item)
     r = portal("POST", f"/api/robo/tarefas/{t['id']}/resultado", {"traducoes": traducoes})
     print(f"  Portal: HTTP {r.status_code} {r.text[:300]}", flush=True)
+    aviso(f"{t['tipo']} {t['id']}: {len(traducoes)} traduções em {time.time() - comeco:.0f} s → Portal HTTP {r.status_code} {r.text[:200]}")
 
 
 def teste_traducao(texto):
@@ -216,6 +222,7 @@ def fazer(t):
         total = (duracao or 0) + deslocamento
         r = portal("POST", f"/api/robo/tarefas/{t['id']}/resultado", {"falas": falas[:30000], "duracao": round(total, 1)})
         print(f"  Portal: HTTP {r.status_code} {r.text[:300]}", flush=True)
+        aviso(f"{t['tipo']} {t['id']}: {len(falas)} falas em {time.time() - comeco:.0f} s → Portal HTTP {r.status_code} {r.text[:200]}")
 
 
 def teste(url):
@@ -256,6 +263,7 @@ def main():
             feitas += 1
         except Exception as e:  # uma tarefa que falha não derruba o robô
             print(f"  ERRO: {e}", flush=True)
+            aviso(f"ERRO em {t.get('tipo')} {t.get('id')}: {e}")
             portal("POST", f"/api/robo/tarefas/{t['id']}/resultado", {"erro": str(e)[:1900]})
     print(f"Fim: {feitas} tarefa(s) feita(s).", flush=True)
 
