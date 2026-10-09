@@ -1,0 +1,4 @@
+# Tradutor do guia de palavras (instalado só quando aparece um guia; o torch vem antes, versão só para processador).
+transformers==4.46.3
+sentencepiece==0.2.0
+sacremoses==0.1.1
