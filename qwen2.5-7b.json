@@ -1,0 +1,198 @@
+[
+ {
+  "fonte": "The New York Times (feed: título e resumo)",
+  "licenca": "Direitos reservados: só os fatos do feed, texto próprio e link",
+  "link": "https://www.nytimes.com/live/2026/10/09/world/nobel-peace-prize-winner-2026",
+  "titulo": "Live Updates: Human Rights Lawyer Navi Pillay Is Awarded Nobel Peace Prize",
+  "texto": "Live Updates: Human Rights Lawyer Navi Pillay Is Awarded Nobel Peace Prize. Ms. Pillay has served as a judge in her native South Africa and on international courts investigating war crimes. She led a U.N. panel that determined that Israel had committed genocide against Palestinians in Gaza, a finding the Israeli government rejected.",
+  "so_feed": true,
+  "saida": {
+   "section": "World",
+   "headline_everyday": "Lawyer gets Nobel Peace Prize",
+   "everyday": "Navi Pillay, human rights lawyer, wins Nobel Peace Prize. She judged in South Africa and international courts. Led UN panel on Israel and Palestinians.",
+   "headline_real": "Navi Pillay Awarded Nobel Peace Prize",
+   "real": "Navi Pillay, a human rights lawyer, has been awarded the Nobel Peace Prize. She has served as a judge in South Africa and on international courts. She led a UN panel that found Israel committed genocide against Palestinians in Gaza, a finding rejected by the Israeli government.",
+   "glossary": [
+    {
+     "word": "Nobel Peace Prize",
+     "pt": "Prêmio Nobel da Paz"
+    },
+    {
+     "word": "human rights lawyer",
+     "pt": "advogado de direitos humanos"
+    },
+    {
+     "word": "judge",
+     "pt": "juiz"
+    },
+    {
+     "word": "international courts",
+     "pt": "tribunais internacionais"
+    },
+    {
+     "word": "UN panel",
+     "pt": "comissão da ONU"
+    },
+    {
+     "word": "genocide",
+     "pt": "genocídio"
+    },
+    {
+     "word": "Palestinians",
+     "pt": "palestinos"
+    },
+    {
+     "word": "Gaza",
+     "pt": "Gaza"
+    }
+   ]
+  },
+  "segundos": 67,
+  "uso": {
+   "completion_tokens": 295,
+   "prompt_tokens": 370,
+   "total_tokens": 665,
+   "prompt_tokens_details": {
+    "cached_tokens": 0
+   }
+  },
+  "problemas": [],
+  "bruto": ""
+ },
+ {
+  "fonte": "CNN Brasil (feed: título e resumo)",
+  "licenca": "Direitos reservados: só os fatos do feed, texto próprio e link",
+  "link": "https://www.cnnbrasil.com.br/nacional/sudeste/mg/aviao-de-pequeno-porte-cai-proximo-a-estacao-de-metro-em-belo-horizonte/",
+  "titulo": "Avião de pequeno porte cai próximo a estação de metrô em Belo Horizonte",
+  "texto": "Avião de pequeno porte cai próximo a estação de metrô em Belo Horizonte. Até o momento, não há informações de vítimas",
+  "so_feed": true,
+  "saida": {
+   "section": "Brazil",
+   "headline_everyday": "Plane crashes near subway station",
+   "everyday": "A small plane crashed near subway station in Belo Horizonte. No victims reported.",
+   "headline_real": "Plane crashes near Belo Horizonte subway station",
+   "real": "A small plane crashed near a subway station in Belo Horizonte. So far, there are no reports of any victims.",
+   "glossary": {
+    "crashes": "acidenta",
+    "subway": "metrô",
+    "station": "estação",
+    "Belo Horizonte": "Belo Horizonte",
+    "no reports": "nenhuma notícias",
+    "victims": "vítimas",
+    "small": "pequeno",
+    "plane": "avião"
+   }
+  },
+  "segundos": 44,
+  "uso": {
+   "completion_tokens": 191,
+   "prompt_tokens": 337,
+   "total_tokens": 528,
+   "prompt_tokens_details": {
+    "cached_tokens": 85
+   }
+  },
+  "problemas": [],
+  "bruto": ""
+ },
+ {
+  "fonte": "The New York Times · Science (feed: título e resumo)",
+  "licenca": "Direitos reservados: só os fatos do feed, texto próprio e link",
+  "link": "https://www.nytimes.com/2026/10/09/science/cancer-vaccines-nih-big-bet.html",
+  "titulo": "Cancer Vaccines Are the N.I.H’s Next ‘Big Bet’",
+  "texto": "Cancer Vaccines Are the N.I.H’s Next ‘Big Bet’. New details have emerged about an initiative that starts in December to fast-track the vaccines, similar to the successful push for the Covid-19 vaccine.",
+  "so_feed": true,
+  "saida": {
+   "section": "Science & Tech",
+   "headline_everyday": "Cancer vaccines to be fast-tracked",
+   "everyday": "New details about cancer vaccine initiative. Starts December, similar to Covid-19 vaccine push.",
+   "headline_real": "N.I.H. to Fast-Track Cancer Vaccines",
+   "real": "New details have emerged about an initiative by the N.I.H. to fast-track cancer vaccines. The program, starting in December, aims to follow a similar approach to the successful push for the Covid-19 vaccine.",
+   "glossary": [
+    {
+     "word": "initiative",
+     "pt": "iniciativa"
+    },
+    {
+     "word": "fast-track",
+     "pt": "acelerar"
+    },
+    {
+     "word": "details",
+     "pt": "detalhes"
+    },
+    {
+     "word": "emerged",
+     "pt": "apareceram"
+    },
+    {
+     "word": "similar",
+     "pt": "semelhante"
+    },
+    {
+     "word": "program",
+     "pt": "programa"
+    },
+    {
+     "word": "approach",
+     "pt": "abordagem"
+    },
+    {
+     "word": "successful",
+     "pt": "sucesso"
+    }
+   ]
+  },
+  "segundos": 55,
+  "uso": {
+   "completion_tokens": 253,
+   "prompt_tokens": 352,
+   "total_tokens": 605,
+   "prompt_tokens_details": {
+    "cached_tokens": 85
+   }
+  },
+  "problemas": [],
+  "bruto": ""
+ },
+ {
+  "fonte": "NASA",
+  "licenca": "Domínio público (NASA)",
+  "link": "https://science.nasa.gov/earth/earth-observatory/floodwaters-overwhelm-thailand/",
+  "titulo": "Floodwaters Overwhelm Thailand",
+  "texto": "September falls in the heart of the monsoon season in Thailand, where cities and towns are accustomed to the afternoon rains and thunderstorms that frequently roll through. But throughout late September and early October 2026, persistent heavy rains punctuated by intense downpours left low-lying areas across the country in Southeast Asia under sustained flooding.\nPrachin Buri province was among the areas where flooding was widespread. The right image above shows land along the Bang Pakong River and nearby agricultural areas and aquaculture facilities inundated on October 2, 2026. The left image shows the same area at the same time of year in 2025. Acquired with NASA-USGS Landsat satellites, the images are false-color to better distinguish water from vegetation, developed land, and other surfaces. The bright red shapes are floating solar arrays.\nSome of the flooding likely stemmed from a low-pressure system that stalled over the area for several days in late September. Stoked by moisture and energy from the warm Gulf of Thailand nearby, the system delivered especially intense rains to the region. About 100 kilometers (60 miles) to the west, Bangkok received nearly 300 millimeters (11.8 inches) of rain over a 48-hour period, according to news reports, close to the average monthly rainfall total for September of 344 millimeters (13.5 inches).\nSince mid-September, flooding has occurred in 50 provinces across the country, affecting over 4 million people and causing dozens of death",
+  "saida": {
+   "section": "Environment",
+   "headline_everyday": "Chuvadas causam alagamentos no Sudeste Asiático",
+   "everyday": "Em setembro de 2026, chuvas fortes causaram alagamentos em partes de Tailândia. Áreas agrícolas e aquicultura ficaram inundadas. Muitas pessoas foram afetadas e houve mortes.",
+   "headline_real": "Heavy Rainfall Causes Flooding in Southeast Asia",
+   "real": "In late September 2026, persistent heavy rains caused flooding in Thailand. Low-lying areas, including agricultural and aquaculture facilities, were inundated. The flooding affected over 4 million people, causing dozens of deaths and damaging about 270,000 hectares of farmland. The rains were stoked by a low-pressure system stalled over the area, delivering intense rainfall to the region.",
+   "glossary": {
+    "causam": "causam",
+    "alagamentos": "inundações",
+    "partes": "áreas",
+    "Sudeste Asiático": "Sudeste Asiático",
+    "chuvadas": "chuvadas",
+    "fortes": "fortes",
+    "áreas agrícolas": "áreas agrícolas",
+    "inundadas": "inundadas"
+   }
+  },
+  "segundos": 105,
+  "uso": {
+   "completion_tokens": 306,
+   "prompt_tokens": 855,
+   "total_tokens": 1161,
+   "prompt_tokens_details": {
+    "cached_tokens": 0
+   }
+  },
+  "problemas": [
+   "nome 'Asiático' não está na fonte",
+   "nome 'Causes' não está na fonte",
+   "nome 'Sudeste' não está na fonte",
+   "nome 'Tailândia' não está na fonte"
+  ],
+  "bruto": ""
+ }
+]
