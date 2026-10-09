@@ -2,32 +2,32 @@
 
 - **Politics & Elections · US**: 3 completas, 0 notas
   - COMPLETA (CBS News, The New York Times, Fox News): Vance says he wouldn't watch livestream of Fort Hood shooter's execution
+  - COMPLETA (Fox News, The New York Times, CBS News): Marco Rubio announces sweeping financial sanctions against the International Criminal Court
   - COMPLETA (Fox News, ABC News, The New York Times, CBS News): Trump says Rogers 'completely obliterated' El-Sayed in debate
-  - COMPLETA (Fox News, The New York Times, CBS News, CNBC): Trump sets up committee to investigate Fed Governor Lisa Cook over mortgage fraud allegations
 - **Politics & Elections · World**: 3 completas, 0 notas
-  - COMPLETA (France 24, The New York Times, The Guardian): Navi Pillay awarded Peace Prize: 'Lifetime spent fighting for what's right & to uphold human rights'
-  - COMPLETA (BBC, The New York Times, France 24, Al Jazeera): Navi Pillay, former UN human rights chief, wins Nobel Peace Prize
-  - COMPLETA (DW, France 24, Al Jazeera, The New York Times): US imposes sanctions aiming to 'dismantle' International Criminal Court
+  - COMPLETA (The Guardian, DW, BBC): Anne Carson wins Nobel prize in literature 2026
+  - COMPLETA (The New York Times, BBC, DW): Paintings Stolen From Renoir Museum Are Recovered, Authorities Say
+  - COMPLETA (The New York Times, The Guardian, DW): Labour Holds Off Green Party in Election for Starmer’s Former London Seat
 - **Politics & Elections · Brazil**: 3 completas, 0 notas
-  - COMPLETA (BBC News Brasil, Folha de S.Paulo, g1, Exame): Quem está à frente nas pesquisas para presidente no 2º turno das Eleições 2026? Veja Lula x Flávio Bolsonaro n
+  - COMPLETA (Folha de S.Paulo, BBC News Brasil, g1): Caixa Econômica vai ser o Itaú da favela, o Bradesco da periferia, diz Flávio Bolsonaro
+  - COMPLETA (BBC News Brasil, g1, Folha de S.Paulo, Exame): O que diziam as pesquisas para presidente logo após o 1º turno em 2018 e 2022 — e o que mostram agora
   - COMPLETA (BBC News Brasil, Folha de S.Paulo, g1): Por que Douglas Ruas deve se tornar governador do Rio dias depois do 1º turno
-  - COMPLETA (Folha de S.Paulo, g1, Poder360): Lula retomará campanha com caminhada no DF 5 dias depois do primeiro turno
 - **Economy & Personal Finance · US**: 1 completas, 2 notas
   - COMPLETA (The New York Times, NPR, CBS News): Hiring Slows as U.S. Jobs Report Shows Labor Market Shifting Into Lower Gear
   - NOTA (The New York Times): Highest Mortgage Rates in 3 Years Chills the Housing Market
-  - NOTA (The New York Times): Adding a Child to Your Car Insurance? Here Are Ways to Hold Down the Costs.
+  - NOTA (NPR): Why American investors love European defense startups
 - **Economy & Personal Finance · World**: 0 completas, 3 notas
   - NOTA (BBC): Burnham promises to curb non-compete rules in job contracts
   - NOTA (DW): Finland, the world's happiest nation, faces a glum winter
   - NOTA (BBC): Ex-Deutsche Bank trader jailed for rigging rates has conviction overturned
 - **Economy & Personal Finance · Brazil**: 0 completas, 3 notas
-  - NOTA (InfoMoney): Forte terremoto de magnitude 8,0 é sentido no Panamá, diz Serviço Geológico dos EUA
+  - NOTA (g1): Gasolina pesa no bolso e faz 78% dos brasileiros considerar carro elétrico, diz pesquisa
+  - NOTA (Folha de S.Paulo): INSS começa a pagar auxílio para vítimas de violência doméstica; veja quem tem direito e como pedir
   - NOTA (g1): Trump cria comitê para investigar Lisa Cook, diretora do Fed, diz Casa Branca
-  - NOTA (InfoMoney): Quadros de Renoir roubados de museu na França são encontrados após um mês
 - **Business · US**: 3 completas, 0 notas
-  - COMPLETA (CNBC, The New York Times, ABC News): Trump Media advisor Katie Zacharia offered White House press secretary role
-  - COMPLETA (CNBC, CBS News, The New York Times): Trump created a committee to dig into the Fed's Lisa Cook. What is it and what comes next?
+  - COMPLETA (CNBC, The New York Times, Fox News, ABC News): Trump Media advisor Katie Zacharia offered White House press secretary role
   - COMPLETA (CNBC, The New York Times, NPR): ChatGPT for Teens is not necessarily 'safer than the previous version,' Common Sense Media finds
+  - COMPLETA (The New York Times, ABC News, CNBC): Europe’s Trade Tensions With China Are Coming to a Head
 - **Business · World**: 0 completas, 3 notas
   - NOTA (The Guardian): ‘People are feeling the real impacts’: influencers are targeting private equity with satire and rage
   - NOTA (BBC): Anthropic bans users from being 'cruel' to its AI systems
@@ -70,16 +70,16 @@
   - NOTA (BBC): Fury-Joshua tickets priced up to £13,000 sell out in one hour
 - **Sports · Brazil**: 0 completas, 3 notas
   - NOTA (ge): Estrela do UFC BJJ abre mão do título para focar na mudança para o MMA
-  - NOTA (Folha de S.Paulo): Além do futebol, Manchester City impulsionou uma transformação urbana
-  - NOTA (ge): Brusque x Paysandu - Campeonato Brasileiro Série C 2026 - globoesporte.com
+  - NOTA (Folha de S.Paulo): Astro da NBA Wembanyama apoia protestos estudantis na França
+  - NOTA (Folha de S.Paulo): Herdeiras de Marta passam por teste duplo contra a Argentina
 - **Culture · US**: 0 completas, 3 notas
   - NOTA (NPR): Five children are taken from their parents in 'Fjord,' which won top prize at Cannes
   - NOTA (CBS News): "Star Wars" lightsaber used in "I am your father" duel could sell for $1 million
   - NOTA (The New York Times): His Unmarked Grave Lay Forgotten for 200 Years. They Had to Fix That.
-- **Culture · World**: 1 completas, 2 notas
-  - COMPLETA (DW, BBC, Al Jazeera, The Guardian): Manchester City Premier League charges: What do they mean?
+- **Culture · World**: 0 completas, 3 notas
   - NOTA (The Guardian): Stark warning – does new footage in Avengers: Endgame reveal the truth about Doctor Doom?
   - NOTA (BBC): Emotions run high at the round table as Celebrity Traitors banish two players
+  - NOTA (The Guardian): Tenzing review – reconstruction of first summit of Everest puts Sherpa at the centre of the story
 - **Culture · Brazil**: 0 completas, 3 notas
   - NOTA (Folha de S.Paulo): Rochelle Jordan transforma herança negra em música de pista no Zig Festival
   - NOTA (g1): Árbitro de 75 anos morre após golpe proibido durante luta livre no México; lutador é detido
@@ -94,16 +94,16 @@
   - NOTA (The Guardian): ‘Like an earthquake’: El Niño is coming for California – is the state ready?
 - **Space & Earth · Brazil**: 0 completas, 3 notas
   - NOTA (g1): Centenária árvore de Florianópolis citada no hino do município não é originária do Brasil, diz pesquisa
-  - NOTA (Folha de S.Paulo): Planeta perde vida selvagem, mas casos de sucesso apontam saídas
+  - NOTA (Folha de S.Paulo): Organizadores da COP31 prometem programa de ação 'ambicioso'
   - NOTA (g1): Quase todo mundo vira naturalmente para a esquerda ao caminhar, e ainda não fazemos ideia do porquê
 - **Entertainment & Curiosities · US**: 1 completas, 2 notas
   - COMPLETA (The New York Times, The Hollywood Reporter, NPR, CBS News): Aaron Sorkin on ‘The Social Reckoning’
   - NOTA (The New York Times): ‘S.N.L.’ Season Premiere: Buckets of Rain, With Jalen Brunson Reigning
-  - NOTA (Variety): Black Bear Acquires Rom-Com ‘Honeymoon / Funeral’ Starring Rebecca Ferguson, Greta Lee and Carrie Coon
-- **Entertainment & Curiosities · World**: 1 completas, 2 notas
-  - COMPLETA (BBC, DW, The Guardian): 'Bold and inventive' Canadian poet Anne Carson wins Nobel Literature Prize
+  - NOTA (Variety): How Skydance Will Remake the Illustrious Culture of Warner Bros. Pictures More Than Any Owner Before
+- **Entertainment & Curiosities · World**: 0 completas, 3 notas
   - NOTA (The Guardian): In the Shadows review – true tale of Ramla Ali’s remarkable rise through the boxing ranks is a knockout
   - NOTA (BBC): Alison Hammond: 'I thought I was having heart attack on air'
+  - NOTA (Mental Floss): 25 Biggest Stars of the 1980s: Where Are They Now?
 - **Entertainment & Curiosities · Brazil**: 0 completas, 3 notas
   - NOTA (Folha de S.Paulo): Globo define gravação e detalhes do especial de fim de ano de Roberto Carlos
   - NOTA (Folha de S.Paulo): Robbie Williams retorna ao Brasil e quer mostrar que é o 'mestre do entretenimento'
