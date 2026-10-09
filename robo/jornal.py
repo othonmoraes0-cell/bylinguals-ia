@@ -509,15 +509,56 @@ def escrever_noticia(g, nota):
     return n, None
 
 
+# Ordem em que os temas escolhem as notícias: do mais específico ao mais geral. Assim o furacão fica em Space & Earth e
+# não em Politics, e o mesmo acontecimento nunca sai em dois temas. Todo robô calcula o mesmo plano (os mesmos feeds),
+# e cada um escreve só o seu tema.
+ORDEM_DE_ESCOLHA = ["space", "science", "health", "sports", "entertainment", "culture", "economy", "business", "politics"]
+# Fora de Politics & Elections, assunto de eleição e de governo não entra como notícia do tema.
+ELEICAO = re.compile(
+    r"(elei[çc]|eleitor|\bturno\b|candidat|campanha|pesquisa (eleitoral|datafolha|quaest|atlas)|\blula\b|bolsonaro|\btse\b|\bstf\b|"
+    r"midterm|election|campaign|ballot|\bsenate\b|\bcongress\b|governor|governador|deputad|senador|centr[ãa]o)",
+    re.I,
+)
+
+
+def planejar():
+    """Para cada tema e região: as notícias completas (grupos de 3+ veículos) e as candidatas a nota, sem repetir assunto."""
+    escolhidos = []  # itens já usados por algum tema (para não repetir o acontecimento)
+    links_usados = set()
+    plano = {}
+
+    def repetido(it):
+        return it["link"] in links_usados or any(mesmo_assunto(it, e) for e in escolhidos)
+
+    for chave in ORDEM_DE_ESCOLHA:
+        nome, regioes = TEMAS[chave]
+        plano[chave] = {}
+        for regiao in REGIOES:
+            itens = [it for it in itens_da_regiao(regioes[regiao]) if chave == "politics" or not ELEICAO.search(it["titulo"] + " " + it["resumo"][:200])]
+            livres = [it for it in itens if not repetido(it)]
+            grupos, usados = grupos_da_regiao(livres, POR_REGIAO, apoio_da_regiao(regiao))
+            for g in grupos:
+                escolhidos.append(g["fontes"][0])
+                links_usados.update(f["link"] for f in g["fontes"])
+            links_usados.update(usados)
+            notas = notas_da_regiao([it for it in livres if not repetido(it)], usados, POR_REGIAO * 2)
+            for it in notas[:POR_REGIAO]:
+                escolhidos.append(it)
+                links_usados.add(it["link"])
+            plano[chave][regiao] = {"grupos": grupos, "notas": notas, "nasa": any(url == NASA for _, url in regioes[regiao])}
+    return plano
+
+
 def so_feeds():
     """Teste rápido (sem IA): quantos itens cada feed traz e quantas notícias completas e notas sairiam."""
     linhas = ["# Feeds do Jornal", ""]
-    for chave, (nome, regioes) in TEMAS.items():
+    plano = planejar()
+    for chave, (nome, _) in TEMAS.items():
         for regiao in REGIOES:
-            itens = itens_da_regiao(regioes[regiao])
-            grupos, usados = grupos_da_regiao(itens, POR_REGIAO, apoio_da_regiao(regiao))
-            notas = notas_da_regiao(itens, usados, POR_REGIAO - len(grupos))
-            linhas.append(f"- **{nome} · {regiao}**: {len(itens)} itens, {len(grupos)} completas, {len(notas)} notas")
+            p = plano[chave][regiao]
+            grupos = p["grupos"]
+            notas = p["notas"][: max(0, POR_REGIAO - len(grupos))]
+            linhas.append(f"- **{nome} · {regiao}**: {len(grupos)} completas, {len(notas)} notas")
             for g in grupos:
                 linhas.append(f"  - COMPLETA ({', '.join(f['veiculo'] for f in g['fontes'])}): {g['fontes'][0]['titulo'][:110]}")
             for it in notas:
@@ -549,12 +590,11 @@ def main():
             aviso(f"{nome}: já está no Portal ({r.json().get('noticias')} notícias). Nada a fazer.")
             return 0
 
+    plano = planejar()[TEMA]
     noticias, descartadas = [], []
     for regiao in REGIOES:
-        feeds = regioes[regiao]
-        itens = itens_da_regiao(feeds)
-        grupos, usados = grupos_da_regiao(itens, POR_REGIAO, apoio_da_regiao(regiao))
-        if any(url == NASA for _, url in feeds):
+        grupos = plano[regiao]["grupos"]
+        if plano[regiao]["nasa"]:
             nasa = da_nasa()
             if nasa:
                 grupos = [nasa] + grupos[: POR_REGIAO - 1]
@@ -574,8 +614,7 @@ def main():
                 descartadas.append(f"[{regiao}] {g['fontes'][0]['titulo']} ({motivo})")
                 print(f"  descartada: {motivo}", flush=True)
         # O que faltou para chegar a POR_REGIAO vira nota curta (com folga, porque a conferência pode tirar alguma).
-        candidatas = notas_da_regiao(itens, usados, (POR_REGIAO - feitas) * 2)
-        for it in candidatas:
+        for it in plano[regiao]["notas"]:
             if feitas >= POR_REGIAO or time.time() - INICIO > LIMITE_S:
                 break
             print(f"[{regiao}] NOTA: {it['titulo']} ({it['veiculo']})", flush=True)
