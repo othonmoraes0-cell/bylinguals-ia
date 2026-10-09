@@ -25,10 +25,13 @@ jobs:
           TOKEN=$(curl -sS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=bylinguals-portal" | python3 -c 'import sys,json;print(json.load(sys.stdin)["value"])')
           STATUS=$(curl -sS -o situacao.json -w "%{http_code}" -H "Authorization: Bearer $TOKEN" "$SITE_URL/api/robo/situacao") || STATUS=000
           echo "HTTP $STATUS"
-          if [ "$STATUS" != "200" ]; then cat situacao.json; echo "::error title=Portal::HTTP $STATUS"; exit 1; fi
-          python3 - <<'PY'
-          import json, os
-          s = json.load(open("situacao.json"))
+          if [ "$STATUS" != "200" ]; then echo "::error title=Portal::HTTP $STATUS $(head -c 300 situacao.json | tr '\n' ' ')"; exit 1; fi
+          python3 - <<'PY' || { echo "::error title=Leitura::$(head -c 300 situacao.json | tr '\n' ' ')"; exit 1; }
+          import json, os, sys, traceback
+          try:
+              s = json.load(open("situacao.json"))
+          except Exception as e:
+              print(f"::error title=JSON::{e}"); sys.exit(1)
           L = [f"## Situação do robô no Portal ({s['geradoEm'][:16].replace('T', ' ')} UTC)", "", "### Fila", "", "| Tipo | Estado | Quantas |", "|---|---|---|"]
           L += [f"| {f['tipo']} | {f['estado']} | {f['quantas']} |" for f in s["fila"]]
           L += ["", "### Tradução dos livros", "", "| Livro | Capítulos | Traduzidos |", "|---|---|---|"]
@@ -41,5 +44,8 @@ jobs:
           texto = "\n".join(L)
           print(texto)
           open(os.environ["GITHUB_STEP_SUMMARY"], "a").write(texto + "\n")
-          print(f"::notice title=Tradução::{feitos} de {tot} capítulos traduzidos")
+          enc = lambda t: t.replace("%", "%25").replace("\r", "").replace("\n", "%0A")
+          print("::notice title=Tradução::" + enc(f"{feitos} de {tot} capítulos traduzidos\n" + "\n".join(f"{t['titulo']}: {t['traduzidos']}/{t['capitulos']}" for t in s["traducao"])))
+          print("::notice title=Fila::" + enc("\n".join(f"{f['tipo']} {f['estado']}: {f['quantas']}" for f in s["fila"]) or "vazia"))
+          print("::notice title=Últimas tarefas::" + enc("\n".join(f"{r['tipo']} {r['alvo']} {r['estado']} {int(r['progresso'] * 100)}% t{r['tentativas']} criada {r['criadaEm'][:16]} fim {(r['concluidaEm'] or '-')[:16]} {(r['erro'] or r['resumo'] or '')[:160]}" for r in s["recentes"][:15])))
           PY
