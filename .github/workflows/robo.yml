@@ -1,0 +1,73 @@
+name: Robô de IA
+
+# Pergunta ao Portal se há legenda ou sincronia para fazer. Repositório público: os minutos do GitHub Actions são grátis.
+on:
+  schedule:
+    - cron: "7,22,37,52 * * * *"
+  workflow_dispatch: {}
+
+permissions:
+  id-token: write # token OIDC: é assim que o Portal sabe que é este robô (sem senha)
+  contents: read
+
+# Um robô por vez: se uma rodada demora (um filme inteiro), a próxima espera.
+concurrency:
+  group: robo-de-ia
+  cancel-in-progress: false
+
+jobs:
+  trabalhar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    env:
+      SITE_URL: ${{ vars.SITE_URL || 'https://www.bylinguals.com.br' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Tem trabalho?
+        id: fila
+        run: |
+          TOKEN=$(curl -sS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=bylinguals-portal" | python3 -c 'import sys,json;print(json.load(sys.stdin)["value"])')
+          STATUS=$(curl -sS -o fila.json -w "%{http_code}" -X GET -H "Authorization: Bearer $TOKEN" "$SITE_URL/api/robo/tarefas/fila") || STATUS=000
+          echo "HTTP $STATUS"; cat fila.json || true; echo
+          if [ "$STATUS" = "200" ] && grep -q '"pendentes":0' fila.json; then echo "trabalho=nao" >> "$GITHUB_OUTPUT"; else echo "trabalho=sim" >> "$GITHUB_OUTPUT"; fi
+
+      - uses: actions/setup-python@v5
+        if: steps.fila.outputs.trabalho == 'sim'
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: robo/requirements.txt
+
+      - name: Modelos do Whisper (cache)
+        if: steps.fila.outputs.trabalho == 'sim'
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: whisper-modelos-v1
+
+      - name: Preparar
+        if: steps.fila.outputs.trabalho == 'sim'
+        run: |
+          (command -v ffmpeg >/dev/null) || (sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg)
+          pip install -q -r robo/requirements.txt
+
+      - name: Trabalhar
+        if: steps.fila.outputs.trabalho == 'sim'
+        run: python robo/robo.py
+
+  # O GitHub desliga agendamentos de repositório sem movimento há 60 dias: um commit vazio por mês mantém o robô vivo.
+  manter-vivo:
+    if: github.event.schedule == '7,22,37,52 * * * *'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Commit mensal
+        run: |
+          ULTIMO=$(git log -1 --format=%ct)
+          if [ $(( $(date +%s) - ULTIMO )) -gt $(( 30 * 24 * 3600 )) ]; then
+            git config user.name "robo-bylinguals" && git config user.email "robo@users.noreply.github.com"
+            git commit --allow-empty -m "Manter o robô agendado [skip ci]" && git push
+          fi
