@@ -1,11 +1,13 @@
 """
-Piloto do Jornal do Club (09/10/2026): dá para escrever notícias em inglês, em 2 níveis, com IA grátis?
+Piloto do Jornal do Club — versão 2 (09/10/2026): "The Bylinguals Daily", mini resumo de 6 a 8 frases, IA grátis.
 
-Roda só no GitHub Actions (repositório público, minutos grátis), com um modelo aberto no processador (llama.cpp).
-Não mexe no Portal: lê notícias de fontes abertas (licença CC BY ou domínio público), escreve as versões e grava um
-relatório (Markdown + JSON) como artefato da execução, para a equipe ler e decidir.
+Fontes (decisão do usuário): The New York Times e CNN Brasil como fonte principal, NASA (domínio público).
+Direitos reservados: de jornal, o robô usa só o TÍTULO e o RESUMO que o próprio veículo publica no feed; nunca abre a matéria.
+Para ter fatos suficientes para 6 a 8 frases sem inventar, junta os resumos de feed de outros veículos sobre o MESMO assunto
+(BBC, Guardian, DW, NPR, g1) e um parágrafo de contexto da Wikipedia (quem é a pessoa, o que é o lugar). O texto é escrito do
+zero pela IA, com a lista de fontes. Da NASA (domínio público) lê a matéria inteira.
 
-Conferência automática do "não inventar": todo número e todo nome próprio do texto escrito precisa aparecer na fonte.
+Não mexe no Portal: grava o relatório no ramo "piloto-jornal".
 """
 import html
 import json
@@ -13,6 +15,7 @@ import os
 import re
 import sys
 import time
+import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
 
@@ -20,18 +23,34 @@ import trafilatura
 
 API = os.environ.get("LLM_URL", "http://127.0.0.1:8080/v1/chat/completions")
 MODELO = os.environ.get("MODELO_ROTULO", "modelo")
-QUANTAS = int(os.environ.get("QUANTAS", "4"))
 UA = {"User-Agent": "Mozilla/5.0 (Bylinguals robo; piloto do jornal)"}
 
-# Decisão do usuário (09/10, 12h01): CNN Brasil, The New York Times e NASA. De jornal com direitos reservados o robô lê só o
-# que o próprio jornal publica no feed (título e resumo) e nunca a matéria inteira: o texto do Portal é escrito do zero,
-# com os fatos, e cita a fonte com o link. A NASA é domínio público: dá para ler a matéria toda.
-FONTES = [
-    {"nome": "The New York Times (feed: título e resumo)", "licenca": "Direitos reservados: só os fatos do feed, texto próprio e link", "so_feed": True, "feeds": ["https://rss.nytimes.com/services/xml/rss/nyt/World.xml"]},
-    {"nome": "CNN Brasil (feed: título e resumo)", "licenca": "Direitos reservados: só os fatos do feed, texto próprio e link", "so_feed": True, "feeds": ["https://www.cnnbrasil.com.br/feed/", "https://www.cnnbrasil.com.br/rss/"]},
-    {"nome": "The New York Times · Science (feed: título e resumo)", "licenca": "Direitos reservados: só os fatos do feed, texto próprio e link", "so_feed": True, "feeds": ["https://rss.nytimes.com/services/xml/rss/nyt/Science.xml"]},
-    {"nome": "NASA", "licenca": "Domínio público (NASA)", "feeds": ["https://www.nasa.gov/news-release/feed/"]},
+PRINCIPAIS = [
+    {"nome": "The New York Times", "secao": "World", "feed": "https://rss.nytimes.com/services/xml/rss/nyt/World.xml", "quantas": 2},
+    {"nome": "CNN Brasil", "secao": "Brazil", "feed": "https://www.cnnbrasil.com.br/feed/", "quantas": 2},
+    {"nome": "The New York Times", "secao": "Science", "feed": "https://rss.nytimes.com/services/xml/rss/nyt/Science.xml", "quantas": 1},
+    {"nome": "The New York Times", "secao": "Sports", "feed": "https://rss.nytimes.com/services/xml/rss/nyt/Sports.xml", "quantas": 1},
 ]
+APOIO = [
+    ("BBC", "https://feeds.bbci.co.uk/news/world/rss.xml"),
+    ("BBC", "https://feeds.bbci.co.uk/news/science_and_environment/rss.xml"),
+    ("BBC", "https://feeds.bbci.co.uk/sport/rss.xml"),
+    ("The Guardian", "https://www.theguardian.com/world/rss"),
+    ("The Guardian", "https://www.theguardian.com/science/rss"),
+    ("DW", "https://rss.dw.com/rdf/rss-en-all"),
+    ("NPR", "https://feeds.npr.org/1001/rss.xml"),
+    ("The New York Times", "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml"),
+    ("CNN Brasil", "https://www.cnnbrasil.com.br/feed/"),
+    ("g1", "https://g1.globo.com/rss/g1/"),
+]
+NASA = {"nome": "NASA", "feed": "https://www.nasa.gov/news-release/feed/"}
+
+PARADAS = set(
+    """the a an and or but of to in on at for with from by as is are was were be been has have had will would can could
+    this that these those it its their his her they he she we you after before over under into about more most new says said
+    after amid than also just what when where who why how which while there here not no yes may might one two three
+    de da do das dos e o a os as em no na nos nas um uma para por com que se ao à é foi são será ser como mais sobre após""".split()
+)
 
 
 def baixar(url, limite=3_000_000):
@@ -40,184 +59,227 @@ def baixar(url, limite=3_000_000):
         return r.read(limite).decode("utf-8", "replace")
 
 
-def itens_do_feed(xml_texto):
-    itens = []
+def limpar(t):
+    return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", html.unescape(t or ""))).strip()
+
+
+def itens_do_feed(url, veiculo):
     try:
-        raiz = ET.fromstring(xml_texto.encode("utf-8"))
-    except ET.ParseError:
-        return itens
+        raiz = ET.fromstring(baixar(url).encode("utf-8"))
+    except Exception as e:  # noqa: BLE001
+        print(f"  feed falhou: {url}: {str(e)[:120]}")
+        return []
+    itens = []
     for it in raiz.iter():
-        tag = it.tag.split("}")[-1]
-        if tag not in ("item", "entry"):
+        if it.tag.split("}")[-1] not in ("item", "entry"):
             continue
-        titulo = link = resumo = ""
+        dados = {"titulo": "", "link": "", "resumo": ""}
         for f in it:
             t = f.tag.split("}")[-1]
             if t == "title":
-                titulo = (f.text or "").strip()
+                dados["titulo"] = limpar(f.text)
             elif t == "link":
-                link = (f.text or f.get("href") or "").strip()
-            elif t in ("description", "summary") and not resumo:
-                resumo = re.sub(r"<[^>]+>", " ", html.unescape(f.text or "")).strip()
-        if titulo and link:
-            itens.append({"titulo": html.unescape(titulo), "link": link, "resumo": re.sub(r"\s+", " ", resumo)})
+                dados["link"] = (f.text or f.get("href") or "").strip()
+            elif t in ("description", "summary") and not dados["resumo"]:
+                dados["resumo"] = limpar(f.text)[:700]
+        if dados["titulo"] and dados["link"]:
+            itens.append({**dados, "veiculo": veiculo})
+    print(f"  feed ok: {veiculo} {url} ({len(itens)})")
     return itens
 
 
-def candidatos(fonte):
-    for url in fonte.get("feeds", []):
-        try:
-            itens = itens_do_feed(baixar(url))
-            if itens:
-                print(f"  feed ok: {url} ({len(itens)} itens)")
-                return itens
-            print(f"  feed vazio: {url}")
-        except Exception as e:  # noqa: BLE001
-            print(f"  feed falhou: {url}: {e}")
-    if fonte.get("pagina"):
-        try:
-            pag = baixar(fonte["pagina"])
-            links = list(dict.fromkeys(re.findall(fonte["padrao"], pag)))
-            print(f"  página: {len(links)} links")
-            return [{"titulo": "", "link": "https://agenciabrasil.ebc.com.br" + l} for l in links]
-        except Exception as e:  # noqa: BLE001
-            print(f"  página falhou: {e}")
-    return []
+def palavras_chave(texto):
+    return {w for w in re.findall(r"[a-zà-ú0-9][a-zà-ú0-9'-]{3,}", texto.lower()) if w not in PARADAS}
 
 
-def texto_da_materia(link):
-    bruto = baixar(link)
-    texto = trafilatura.extract(bruto, include_comments=False, include_tables=False) or ""
-    meta = trafilatura.extract_metadata(bruto)
-    titulo = (meta.title if meta else "") or ""
-    return titulo, texto.strip()
+def parecidas(principal, pool):
+    chave = palavras_chave(principal["titulo"] + " " + principal["resumo"])
+    nomes = set(re.findall(r"\b[A-ZÀ-Ú][a-zà-ú]{2,}", principal["titulo"] + " " + principal["resumo"]))
+    saida = []
+    for it in pool:
+        if it["link"] == principal["link"]:
+            continue
+        outra = palavras_chave(it["titulo"] + " " + it["resumo"])
+        comuns = chave & outra
+        nomes_comuns = {n for n in nomes if n.lower() in (it["titulo"] + " " + it["resumo"]).lower()}
+        if len(comuns) >= 4 or (len(nomes_comuns) >= 2 and len(comuns) >= 2):
+            saida.append((len(comuns) + 2 * len(nomes_comuns), it))
+    saida.sort(key=lambda x: -x[0])
+    vistos, final = set(), []
+    for _, it in saida:
+        if it["titulo"] in vistos:
+            continue
+        vistos.add(it["titulo"])
+        final.append(it)
+    return final[:4]
+
+
+def contexto_wikipedia(texto):
+    """Um parágrafo de contexto da Wikipedia sobre o nome principal da notícia (CC BY-SA: usamos só os fatos)."""
+    nomes = re.findall(r"\b([A-ZÀ-Ú][a-zà-ú]+(?:\s[A-ZÀ-Ú][a-zà-ú]+)+)", texto)
+    for nome in nomes[:4]:
+        try:
+            q = urllib.parse.quote(nome.replace(" ", "_"))
+            dados = json.loads(baixar(f"https://en.wikipedia.org/api/rest_v1/page/summary/{q}"))
+            if dados.get("type") == "standard" and dados.get("extract"):
+                return {"veiculo": "Wikipedia (contexto)", "titulo": dados.get("title", nome), "resumo": dados["extract"][:900], "link": dados.get("content_urls", {}).get("desktop", {}).get("page", "")}
+        except Exception:  # noqa: BLE001
+            continue
+    return None
 
 
 PROMPT_SISTEMA = (
-    "You are a news editor at Bylinguals, an English school in Brazil. You rewrite news for adult Brazilian learners of English. "
-    "Use ONLY facts that are stated in the SOURCE. Never add names, numbers, dates, places, quotes or facts that are not in the SOURCE. "
-    "If something is unclear, leave it out. Neutral, factual tone. No opinions."
+    "You are a news editor at Bylinguals, an English school in Brazil. You write short news stories for adult Brazilian learners of English. "
+    "Write ONLY in English. Use ONLY facts that appear in the FACTS below. Never add names, numbers, dates, places, quotes or facts that are not in the FACTS. "
+    "Background facts may only come from the BACKGROUND section. Write in your own words: never copy a sentence from the FACTS. "
+    "Neutral, factual tone. No opinions, no adjectives that judge. If sources disagree, say what each source reports."
 )
 
 
-def pedir(fonte_nome, texto, so_feed=False):
-    palavras = texto.split()
-    corte = " ".join(palavras[:1100])
+def pedir(fatos, longo, tentativa_extra=""):
+    if longo:
+        tamanhos = ('"everyday": 6 to 8 short sentences (CEFR A2: max 14 words each, common words, simple present and simple past)\n'
+                    '- "real": 8 to 10 sentences (CEFR B1, natural English, with context)')
+    else:
+        tamanhos = ('"everyday": 5 to 6 short sentences (CEFR A2: max 14 words each, common words, simple present and simple past)\n'
+                    '- "real": 6 to 8 sentences (CEFR B1, natural English, the main facts first, then context from BACKGROUND if there is any)')
     usuario = (
-        f"SOURCE (from {fonte_nome}):\n\"\"\"\n{corte}\n\"\"\"\n\n"
-        "Write a JSON object with exactly these keys:\n"
-        '- "section": one of Brazil, World, Science & Tech, Sports, Business, Culture, Health, Environment\n'
+        f"{fatos}\n\nWrite a JSON object with exactly these keys:\n"
+        '- "section": one of Brazil, World, Science, Health, Sports, Business, Culture, Space & Earth\n'
         '- "headline_everyday": a short headline (max 10 words), simple English\n'
-        + (
-            '- "everyday": the news in 50 to 90 words, CEFR A2 level: short sentences (max 15 words), common words, simple present and simple past. The SOURCE is short: do NOT add anything that is not in it\n'
-            '- "headline_real": a headline (max 12 words)\n'
-            '- "real": the news in 80 to 130 words, CEFR B1 level, natural English. The SOURCE is short: do NOT add anything that is not in it\n'
-            if so_feed
-            else '- "everyday": the news in 110 to 160 words, CEFR A2 level: short sentences (max 15 words), common words, simple present and simple past\n'
-            '- "headline_real": a headline (max 12 words)\n'
-            '- "real": the news in 180 to 250 words, CEFR B1 level, natural English, with the main facts and context from the SOURCE\n'
-        )
-        + '- "glossary": a list of 8 objects {"word": English word or expression used in "real", "pt": short meaning in Brazilian Portuguese}\n'
-        "Return only the JSON."
+        f"- {tamanhos}\n"
+        '- "headline_real": a headline (max 12 words)\n'
+        '- "glossary": a list of 8 objects {"word": an English word or expression that appears in "real", "pt": its meaning in Brazilian Portuguese}\n'
+        '- "sources_used": list of the source names you used\n'
+        f"Everything must be in English except the \"pt\" values. Return only the JSON.{tentativa_extra}"
     )
     corpo = {
         "messages": [{"role": "system", "content": PROMPT_SISTEMA}, {"role": "user", "content": usuario}],
         "temperature": 0.3,
-        "max_tokens": 1300,
+        "max_tokens": 1500,
         "response_format": {"type": "json_object"},
     }
     req = urllib.request.Request(API, data=json.dumps(corpo).encode(), headers={"Content-Type": "application/json"})
     t0 = time.time()
     with urllib.request.urlopen(req, timeout=3000) as r:
         resp = json.load(r)
-    gasto = time.time() - t0
     conteudo = resp["choices"][0]["message"]["content"]
-    uso = resp.get("usage", {})
     m = re.search(r"\{.*\}", conteudo, re.S)
-    dados = json.loads(m.group(0)) if m else {}
-    return dados, gasto, uso, conteudo
+    try:
+        dados = json.loads(m.group(0)) if m else {}
+    except json.JSONDecodeError:
+        dados = {}
+    return dados, time.time() - t0, resp.get("usage", {})
 
 
 COMUNS = set(
     "The A An I It In On At Of And But Or So If As For To By With From This That These Those He She They We You His Her Their Our "
     "Its There Here When Where What Who Why How Today Yesterday Tomorrow Monday Tuesday Wednesday Thursday Friday Saturday Sunday "
-    "Brazil Brazilian Brazilians English Portuguese Everyday Real People Many Some More Most Also Now Then After Before During Last Next "
-    "First Second Third One Two Three New".split()
+    "January February March April May June July August September October November December "
+    "Brazil Brazilian Brazilians English Portuguese People Many Some More Most Also Now Then After Before During Last Next "
+    "First Second Third One Two Three New However Meanwhile According Earlier Later Other Others".split()
 )
+PORTUGUES = re.compile(r"\b(não|são|está|também|após|chuvas|pessoas|governo|então|foram|ainda)\b", re.I)
 
 
-def conferir(saida, fonte):
-    fonte_min = fonte.lower()
-    numeros_fonte = {re.sub(r"[,.]", "", n) for n in re.findall(r"\d[\d,.]*", fonte)}
+def conferir(dados, fatos):
+    corpo = f"{dados.get('everyday', '')} {dados.get('real', '')}"
+    fonte_min = fatos.lower()
+    numeros_fonte = {re.sub(r"[,.]", "", n) for n in re.findall(r"\d[\d,.]*", fatos)}
     problemas = []
-    for n in re.findall(r"\d[\d,.]*", saida):
+    for n in re.findall(r"\d[\d,.]*", corpo):
         limpo = re.sub(r"[,.]", "", n.rstrip(".,"))
         if limpo and limpo not in numeros_fonte:
-            problemas.append(f"número {n} não está na fonte")
-    for nome in set(re.findall(r"(?<![.!?]\s)(?<!^)\b([A-Z][a-zà-ú]+(?:\s[A-Z][a-zà-ú]+)*)", saida, re.M)):
-        partes = [p for p in nome.split() if p not in COMUNS]
-        for p in partes:
-            if p.lower() not in fonte_min:
-                problemas.append(f"nome '{p}' não está na fonte")
-    return sorted(set(problemas))
+            problemas.append(f"número {n} não está nas fontes")
+    for nome in set(re.findall(r"(?<![.!?]\s)(?<!^)\b([A-Z][a-zà-ú]+(?:\s[A-Z][a-zà-ú]+)*)", corpo, re.M)):
+        for p in nome.split():
+            if p not in COMUNS and p.lower() not in fonte_min:
+                problemas.append(f"nome '{p}' não está nas fontes")
+    defeitos = []
+    if PORTUGUES.search(corpo):
+        defeitos.append("texto em português")
+    gl = [g for g in dados.get("glossary", []) if isinstance(g, dict) and g.get("word") and g.get("pt")]
+    if len(gl) < 4:
+        defeitos.append("glossário vazio ou curto")
+    if not dados.get("everyday") or not dados.get("real"):
+        defeitos.append("faltou uma versão")
+    return sorted(set(problemas)), defeitos
 
 
 def frases(texto):
-    fs = [f for f in re.split(r"(?<=[.!?])\s+", texto.strip()) if f]
+    fs = [f for f in re.split(r"(?<=[.!?])\s+", str(texto).strip()) if f]
     return len(fs), (sum(len(f.split()) for f in fs) / len(fs)) if fs else 0
 
 
-def main():
-    escolhidas = []
-    for fonte in FONTES:
-        print(f"Fonte: {fonte['nome']}")
-        for c in candidatos(fonte)[:8]:
-            if fonte.get("so_feed"):
-                titulo, texto = c["titulo"], f"{c['titulo']}. {c.get('resumo', '')}".strip()
-                if len(texto.split()) < 15:
-                    print(f"  resumo curto demais: {c['link']}")
-                    continue
-                escolhidas.append({"fonte": fonte["nome"], "licenca": fonte["licenca"], "link": c["link"], "titulo": titulo, "texto": texto, "so_feed": True})
-                print(f"  escolhida (só feed): {titulo} ({len(texto.split())} palavras)")
-                break
-            try:
-                titulo, texto = texto_da_materia(c["link"])
-            except Exception as e:  # noqa: BLE001
-                print(f"  matéria falhou: {c['link']}: {e}")
-                continue
-            if len(texto.split()) < 180:
-                print(f"  curta demais ({len(texto.split())} palavras): {c['link']}")
-                continue
-            escolhidas.append({"fonte": fonte["nome"], "licenca": fonte["licenca"], "link": c["link"], "titulo": c["titulo"] or titulo, "texto": texto})
-            print(f"  escolhida: {c['titulo'] or titulo} ({len(texto.split())} palavras)")
+def escrever(fatos, longo):
+    gasto_total, uso_total, tentativas = 0, {}, 0
+    extra = ""
+    dados, problemas, defeitos = {}, [], []
+    for tentativas in range(1, 4):
+        dados, gasto, uso = pedir(fatos, longo, extra)
+        gasto_total += gasto
+        uso_total = uso
+        problemas, defeitos = conferir(dados, fatos)
+        if not problemas and not defeitos:
             break
-        if len(escolhidas) >= QUANTAS:
+        extra = "\nIMPORTANT: your last answer had problems: " + "; ".join(defeitos + problemas) + ". Fix them: English only, only facts from FACTS/BACKGROUND, 8 glossary items."
+        print(f"    tentativa {tentativas}: {defeitos + problemas}")
+    return dados, problemas, defeitos, round(gasto_total), uso_total, tentativas
+
+
+def main():
+    pool = []
+    for veiculo, url in APOIO:
+        pool += itens_do_feed(url, veiculo)
+    historias = []
+    for p in PRINCIPAIS:
+        itens = itens_do_feed(p["feed"], p["nome"])
+        pegas = 0
+        for it in itens:
+            if pegas >= p["quantas"]:
+                break
+            if len(it["resumo"].split()) < 8 or "/opinion/" in it["link"]:
+                continue
+            apoio = parecidas(it, pool)
+            historias.append({"principal": it, "apoio": apoio, "secao": p["secao"]})
+            pegas += 1
+    # NASA: matéria inteira (domínio público).
+    for it in itens_do_feed(NASA["feed"], "NASA")[:5]:
+        try:
+            texto = trafilatura.extract(baixar(it["link"])) or ""
+        except Exception:  # noqa: BLE001
+            continue
+        if len(texto.split()) >= 200:
+            historias.append({"principal": {**it, "resumo": " ".join(texto.split()[:900])}, "apoio": [], "secao": "Space & Earth", "nasa": True})
             break
 
-    linhas = [f"# Piloto do Jornal: {MODELO}", ""]
+    linhas = [f"# Piloto do Jornal v2 (The Bylinguals Daily): {MODELO}", ""]
     resultados = []
-    for e in escolhidas:
-        print(f"Escrevendo: {e['titulo']}")
+    for h in historias:
+        pr = h["principal"]
+        fontes = [pr] + h["apoio"]
+        texto_base = " ".join(f"{f['titulo']} {f['resumo']}" for f in fontes)
+        fundo = None if h.get("nasa") else contexto_wikipedia(pr["titulo"] + " " + pr["resumo"])
+        fatos = "FACTS:\n" + "\n".join(f"- {f['veiculo']}: {f['titulo']}. {f['resumo']}" for f in fontes)
+        if fundo:
+            fatos += f"\n\nBACKGROUND (Wikipedia, {fundo['titulo']}): {fundo['resumo']}"
+        print(f"Escrevendo: {pr['titulo']} ({len(h['apoio'])} de apoio, contexto: {bool(fundo)})")
         try:
-            dados, gasto, uso, bruto = pedir(e["fonte"], e["texto"], e.get("so_feed", False))
+            dados, problemas, defeitos, gasto, uso, tentativas = escrever(fatos, bool(h.get("nasa")))
         except Exception as erro:  # noqa: BLE001
             print(f"  falhou: {erro}")
-            linhas += [f"## {e['titulo']}", f"Falhou: {erro}", ""]
             continue
-        saida = " ".join(str(dados.get(k, "")) for k in ("headline_everyday", "everyday", "headline_real", "real"))
-        problemas = conferir(saida, e["texto"] + " " + e["titulo"])
-        n1, m1 = frases(str(dados.get("everyday", "")))
-        n2, m2 = frases(str(dados.get("real", "")))
-        r = {**e, "texto": e["texto"][:1500], "saida": dados, "segundos": round(gasto), "uso": uso, "problemas": problemas, "bruto": bruto if not dados else ""}
-        resultados.append(r)
-        print(f"  {round(gasto)} s · problemas: {len(problemas)}")
+        n1, m1 = frases(dados.get("everyday", ""))
+        n2, m2 = frases(dados.get("real", ""))
+        resultados.append({"historia": h, "fundo": fundo, "saida": dados, "problemas": problemas, "defeitos": defeitos, "segundos": gasto, "tentativas": tentativas})
+        print(f"  {gasto} s em {tentativas} tentativa(s) · problemas: {problemas} · defeitos: {defeitos}")
         linhas += [
-            f"## {e['titulo']}",
-            f"Fonte: {e['fonte']} · {e['licenca']} · {e['link']}",
-            f"Tempo: {round(gasto)} s · tokens: {uso}",
-            f"Conferência (números e nomes que não estão na fonte): {'nenhum problema' if not problemas else '; '.join(problemas)}",
-            "",
-            f"**Seção:** {dados.get('section', '?')}",
+            f"## [{h['secao']}] {pr['titulo']}",
+            f"Fonte principal: {pr['veiculo']} · {pr['link']}",
+            "Fontes de apoio (só título e resumo do feed): " + ("; ".join(f"{a['veiculo']}: {a['titulo']}" for a in h["apoio"]) or "nenhuma"),
+            f"Contexto: {fundo['titulo'] + ' (Wikipedia)' if fundo else 'nenhum'}",
+            f"Tempo: {gasto} s · tentativas: {tentativas} · tokens: {uso}",
+            f"Conferência: {'nenhum problema' if not problemas and not defeitos else '; '.join(defeitos + problemas)}",
             "",
             f"### Everyday English: {dados.get('headline_everyday', '')}",
             f"_{len(str(dados.get('everyday', '')).split())} palavras, {n1} frases, média {m1:.1f} palavras por frase_",
@@ -231,9 +293,11 @@ def main():
             "",
             "**Glossário:** " + "; ".join(f"{g.get('word')} = {g.get('pt')}" for g in dados.get("glossary", []) if isinstance(g, dict)),
             "",
-            "<details><summary>Começo da fonte</summary>",
+            "**Fontes usadas (segundo a IA):** " + ", ".join(map(str, dados.get("sources_used", []))),
             "",
-            e["texto"][:1200],
+            "<details><summary>Os fatos que a IA recebeu</summary>",
+            "",
+            fatos[:3000],
             "",
             "</details>",
             "",
@@ -242,12 +306,12 @@ def main():
     with open("piloto/resultado.md", "w", encoding="utf-8") as f:
         f.write("\n".join(linhas))
     with open("piloto/resultado.json", "w", encoding="utf-8") as f:
-        json.dump(resultados, f, ensure_ascii=False, indent=1)
+        json.dump(resultados, f, ensure_ascii=False, indent=1, default=str)
     resumo = os.environ.get("GITHUB_STEP_SUMMARY")
     if resumo:
         with open(resumo, "a", encoding="utf-8") as f:
             f.write("\n".join(linhas))
-    print(f"Feito: {len(resultados)} matérias")
+    print(f"Feito: {len(resultados)} notícias")
     return 0 if resultados else 1
 
 
