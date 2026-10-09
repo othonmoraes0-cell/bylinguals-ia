@@ -46,6 +46,10 @@ jobs:
           open(os.environ["GITHUB_STEP_SUMMARY"], "a").write(texto + "\n")
           enc = lambda t: t.replace("%", "%25").replace("\r", "").replace("\n", "%0A")
           print("::notice title=Tradução::" + enc(f"{feitos} de {tot} capítulos traduzidos\n" + "\n".join(f"{t['titulo']}: {t['traduzidos']}/{t['capitulos']}" for t in s["traducao"])))
+          d = s.get("dicionario") or {}
+          print("::notice title=Dicionário::" + enc(f"publicados {d.get('publicados')} · por estado {d.get('porEstado')} · por tipo {d.get('porTipo')} · sugestões {d.get('sugestoes')} · banco {s.get('bancoMb')} MB"))
+          for a in (s.get("amostraDoDicionario") or [])[:3]:
+              print("::notice title=Amostra " + a["lema"] + "::" + enc(json.dumps(a.get("verbete"), ensure_ascii=False)[:3800]))
           print("::notice title=Fila::" + enc("\n".join(f"{f['tipo']} {f['estado']}: {f['quantas']}" for f in s["fila"]) or "vazia"))
           print("::notice title=Últimas tarefas::" + enc("\n".join(f"{r['tipo']} {r['alvo']} {r['estado']} {int(r['progresso'] * 100)}% t{r['tentativas']} criada {r['criadaEm'][:16]} fim {(r['concluidaEm'] or '-')[:16]} {(r['erro'] or r['resumo'] or '')[:160]}" for r in s["recentes"][:15])))
           PY
