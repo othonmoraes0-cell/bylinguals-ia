@@ -184,16 +184,28 @@ NOMES_GENERICOS = {
 }
 
 
+_PERFIL = {}
+
+
+def perfil(it):
+    """Palavras e nomes de um item, calculados uma vez só (o plano compara milhares de pares)."""
+    chave = it["link"]
+    if chave not in _PERFIL:
+        t = it["titulo"] + " " + it["resumo"]
+        _PERFIL[chave] = (palavras_chave(t), {p for n in nomes(t) for p in n.split() if len(p) > 3}, t.lower(), palavras_chave(it["titulo"]))
+    return _PERFIL[chave]
+
+
 def mesmo_assunto(a, b):
     """Mesmo acontecimento, não só o mesmo país: nomes específicos em comum, título parecido e boa parte das palavras."""
-    ta, tb = a["titulo"] + " " + a["resumo"], b["titulo"] + " " + b["resumo"]
-    ka, kb = palavras_chave(ta), palavras_chave(tb)
+    ka, na, _, tka = perfil(a)
+    kb, _, nb_txt, tkb = perfil(b)
     comuns = ka & kb
-    na = {p for n in nomes(ta) for p in n.split()}
-    nb_txt = tb.lower()
-    nomes_comuns = {p.lower() for p in na if p.lower() in nb_txt and len(p) > 3}
+    if len(comuns) < 3:
+        return False
+    nomes_comuns = {p.lower() for p in na if p.lower() in nb_txt}
     especificos = nomes_comuns - NOMES_GENERICOS
-    titulos = palavras_chave(a["titulo"]) & palavras_chave(b["titulo"])
+    titulos = tka & tkb
     jaccard = len(comuns) / max(1, len(ka | kb))
     return len(nomes_comuns) >= 2 and len(comuns) >= 3 and jaccard >= 0.12 and ((len(especificos) >= 1 and len(titulos) >= 1) or len(titulos) >= 3)
 
