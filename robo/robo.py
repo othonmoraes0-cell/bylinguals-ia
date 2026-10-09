@@ -157,12 +157,12 @@ def fazer_guia(t):
     comeco = time.time()
     frases = list(dict.fromkeys(p["frase"] for p in palavras if p.get("frase")))
     total = len(palavras) + len(frases)
-    aviso = {"em": time.time()}
+    marca = {"em": time.time()}
 
     def progresso(feitas_antes):
         def f(n):
-            if time.time() - aviso["em"] > 45:
-                aviso["em"] = time.time()
+            if time.time() - marca["em"] > 45:
+                marca["em"] = time.time()
                 fracao = min(0.99, (feitas_antes + n) / total)
                 print(f"  {fracao:.0%}", flush=True)
                 try:
