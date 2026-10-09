@@ -305,45 +305,45 @@ def s(maxlen):
 ESQUEMA = {
     "type": "object",
     "properties": {
-        "conceito": s(600),
-        "traducoes": {"type": "array", "items": s(60), "minItems": 1, "maxItems": 8},
+        "conceito": s(260),
+        "traducoes": {"type": "array", "items": s(50), "minItems": 1, "maxItems": 6},
         "nivel": {"type": "string", "enum": ["A1", "A2", "B1", "B2", "C1", "C2"]},
         "registro": {"type": "string", "enum": ["formal", "neutro", "informal", "gíria", "técnico"]},
         "areas": {"type": "array", "items": {"type": "string", "enum": AREAS}, "maxItems": 3},
-        "sentidos": {"type": "array", "minItems": 1, "maxItems": 5, "items": {"type": "object", "properties": {"classe": s(25), "definicao": s(300), "exemplo": s(220), "exemploPt": s(240)}, "required": ["classe", "definicao", "exemplo", "exemploPt"]}},
-        "collocations": {"type": "array", "maxItems": 10, "items": {"type": "object", "properties": {"expressao": s(60), "traducao": s(90)}, "required": ["expressao", "traducao"]}},
-        "padroes": {"type": "array", "maxItems": 5, "items": {"type": "object", "properties": {"padrao": s(80), "exemplo": s(200), "traducao": s(220)}, "required": ["padrao", "exemplo", "traducao"]}},
-        "frases": {"type": "array", "maxItems": 6, "items": {"type": "object", "properties": {"en": s(200), "pt": s(220)}, "required": ["en", "pt"]}},
-        "alternativas": {"type": "array", "maxItems": 5, "items": {"type": "object", "properties": {"palavra": s(50), "diferenca": s(300)}, "required": ["palavra", "diferenca"]}},
-        "relacionados": {"type": "array", "items": s(50), "maxItems": 10},
-        "phrasalVerbs": {"type": "array", "maxItems": 8, "items": {"type": "object", "properties": {"expressao": s(50), "significado": s(160)}, "required": ["expressao", "significado"]}},
-        "idioms": {"type": "array", "maxItems": 6, "items": {"type": "object", "properties": {"expressao": s(90), "significado": s(200)}, "required": ["expressao", "significado"]}},
-        "erroComum": s(400),
-        "intencoes": {"type": "array", "items": s(70), "maxItems": 6},
+        "sentidos": {"type": "array", "minItems": 1, "maxItems": 3, "items": {"type": "object", "properties": {"classe": s(25), "definicao": s(160), "exemplo": s(150), "exemploPt": s(170)}, "required": ["classe", "definicao", "exemplo", "exemploPt"]}},
+        "collocations": {"type": "array", "maxItems": 6, "items": {"type": "object", "properties": {"expressao": s(50), "traducao": s(70)}, "required": ["expressao", "traducao"]}},
+        "padroes": {"type": "array", "maxItems": 3, "items": {"type": "object", "properties": {"padrao": s(60), "exemplo": s(150), "traducao": s(170)}, "required": ["padrao", "exemplo", "traducao"]}},
+        "frases": {"type": "array", "maxItems": 4, "items": {"type": "object", "properties": {"en": s(150), "pt": s(170)}, "required": ["en", "pt"]}},
+        "alternativas": {"type": "array", "maxItems": 3, "items": {"type": "object", "properties": {"palavra": s(40), "diferenca": s(160)}, "required": ["palavra", "diferenca"]}},
+        "relacionados": {"type": "array", "items": s(40), "maxItems": 8},
+        "phrasalVerbs": {"type": "array", "maxItems": 5, "items": {"type": "object", "properties": {"expressao": s(40), "significado": s(90)}, "required": ["expressao", "significado"]}},
+        "idioms": {"type": "array", "maxItems": 3, "items": {"type": "object", "properties": {"expressao": s(70), "significado": s(110)}, "required": ["expressao", "significado"]}},
+        "erroComum": s(200),
+        "intencoes": {"type": "array", "items": s(60), "maxItems": 4},
     },
     "required": ["conceito", "traducoes", "nivel", "registro", "areas", "sentidos", "collocations", "padroes", "frases", "alternativas", "relacionados", "phrasalVerbs", "idioms", "erroComum", "intencoes"],
 }
 
-SISTEMA = """Você é lexicógrafo sênior da Bylinguals, escola de inglês para adultos brasileiros (muitos profissionais de empresas).
+SISTEMA = """Você é lexicógrafo da Bylinguals, escola de inglês para profissionais brasileiros de empresas (reuniões, e-mails, apresentações, negociações, clientes, relatórios, entrevistas, viagens a trabalho).
 Escreva o verbete do Dicionário Bylinguals para a entrada pedida. Responda só com o JSON pedido.
 
-Regras:
-- Explicações, definições e traduções em português do Brasil, claras e diretas, como um bom professor explicaria.
-- Exemplos em inglês natural e atual (de conversa, trabalho e notícias), com a tradução para o português.
-- Escreva tudo com as suas palavras. Nunca copie definições de dicionários publicados.
-- conceito: 1 a 3 frases sobre o que a palavra significa e quando se usa.
-- traducoes: as traduções mais usadas, da mais comum para a menos comum.
-- sentidos: os sentidos mais importantes (até 5), cada um com exemplo em inglês e tradução.
-- collocations: combinações realmente frequentes com a palavra (verbo + substantivo, adjetivo + substantivo etc.), com tradução.
-- padroes: estruturas gramaticais de uso, em notação de professor (ex.: "suggest + -ing", "be good at + noun"), com exemplo e tradução.
-- frases: frases prontas frequentes do dia a dia ou do trabalho.
-- alternativas: palavras parecidas e a diferença de uso para esta (registro, sentido, intensidade). Lista vazia se não houver.
-- phrasalVerbs e idioms: só os que existem de verdade com esta palavra e são usados hoje. Listas vazias se não houver.
-- erroComum: o erro típico de brasileiros com esta palavra (falso cognato, preposição errada, tradução literal, pronúncia). Texto vazio se não houver um erro típico.
-- areas: só se for termo de uma área profissional; senão lista vazia.
-- nivel: o nível CEFR em que o aluno costuma aprender esta palavra.
-- intencoes: o que a pessoa quer dizer quando usa a palavra, em português, frases curtas (ex.: "pedir desculpas", "marcar uma reunião").
-- relacionados: palavras do mesmo campo (em inglês)."""
+Regras (verbete CURTO e direto, foco no mundo das empresas):
+- Português do Brasil nas explicações. Frases curtas. Nada de enrolação.
+- Exemplos e frases em inglês do ambiente de trabalho (reunião, e-mail, cliente, projeto, prazo, equipe), naturais e atuais, com tradução. Se a palavra quase não aparece no trabalho, use um exemplo do dia a dia de um adulto.
+- Escreva com as suas palavras. Nunca copie definições de dicionários publicados.
+- conceito: 1 ou 2 frases curtas.
+- traducoes: as mais usadas, da mais comum para a menos comum.
+- sentidos: só os mais importantes (até 3), definição curta + 1 exemplo.
+- collocations: as combinações mais frequentes no trabalho, com tradução.
+- padroes: estruturas de uso em notação de professor (ex.: "suggest + -ing"), com exemplo.
+- frases: frases prontas úteis no trabalho.
+- alternativas: palavras parecidas e a diferença em uma frase. Vazio se não houver.
+- phrasalVerbs e idioms: só os reais e usados hoje, de preferência no trabalho. Vazio se não houver.
+- erroComum: o erro típico de brasileiros (falso cognato, preposição, tradução literal, pronúncia), em uma frase. Vazio se não houver.
+- areas: só se for termo de uma área profissional; senão vazio.
+- nivel: o nível CEFR em que se aprende a palavra.
+- intencoes: o que a pessoa quer dizer ao usar a palavra, em português, bem curto (ex.: "cobrar um prazo", "pedir desculpas").
+- relacionados: palavras do mesmo campo, em inglês."""
 
 
 def pedir_verbete(lema, tipo, base, contexto=None):
@@ -361,7 +361,7 @@ def pedir_verbete(lema, tipo, base, contexto=None):
     corpo = {
         "messages": [{"role": "system", "content": SISTEMA}, {"role": "user", "content": json.dumps(dados, ensure_ascii=False)}],
         "temperature": 0.3,
-        "max_tokens": 2200,
+        "max_tokens": 1400,
         "response_format": {"type": "json_object", "schema": ESQUEMA},
     }
     r = requests.post(LLM, json=corpo, timeout=1800)
@@ -469,6 +469,11 @@ def fazer_enriquecer(maquina, so_sugestoes=False):
 
 if __name__ == "__main__":
     modo = sys.argv[1] if len(sys.argv) > 1 else "enriquecer"
+    if modo == "refazer":
+        # Volta para a fila os verbetes escritos pelo robô antes de agora (os revisados pela escola não mudam).
+        r = portal("POST", "/api/robo/dicionario/refazer", {"antesDe": os.environ.get("REFAZER_ANTES_DE") or time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())})
+        aviso("Refazer", f"HTTP {r.status_code} {r.text[:300]}")
+        sys.exit(0 if r.status_code == 200 else 1)
     if modo == "base":
         fazer_base(int(os.environ.get("LIMITE_PALAVRAS", "25000")))
     elif modo == "sugestoes":

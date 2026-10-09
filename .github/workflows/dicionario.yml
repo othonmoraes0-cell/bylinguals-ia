@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
     inputs:
       modo:
-        description: "base | enriquecer | sugestoes"
+        description: "base | enriquecer | sugestoes | refazer (volta os verbetes do robô para a fila)"
         default: "enriquecer"
       maquinas:
         description: "Quantas máquinas escrevem ao mesmo tempo (enriquecer)"
@@ -41,7 +41,7 @@ jobs:
 
   base:
     needs: plano
-    if: needs.plano.outputs.modo == 'base'
+    if: needs.plano.outputs.modo == 'base' || needs.plano.outputs.modo == 'refazer'
     runs-on: ubuntu-latest
     timeout-minutes: 240
     concurrency:
@@ -56,12 +56,12 @@ jobs:
         with:
           python-version: "3.11"
       - run: pip install -q requests==2.32.3 wordfreq==3.1.1
-      - name: Base aberta
-        run: python robo/dicionario.py base
+      - name: Base aberta (ou refazer)
+        run: python robo/dicionario.py ${{ needs.plano.outputs.modo }}
 
   escrever:
     needs: plano
-    if: needs.plano.outputs.modo != 'base'
+    if: needs.plano.outputs.modo != 'base' && needs.plano.outputs.modo != 'refazer'
     runs-on: ubuntu-latest
     timeout-minutes: 355
     strategy:
