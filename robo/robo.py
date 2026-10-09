@@ -114,9 +114,12 @@ def teste(url):
         extrair_audio(url, {"ini": 0, "fim": 180}, wav)
         m = modelo("base.en")
         segmentos, info = m.transcribe(wav, language="en", beam_size=1, vad_filter=True, condition_on_previous_text=False)
+        linhas = []
         for s in segmentos:
+            linhas.append(s.text.strip())
             print(f"[{s.start:7.2f} → {s.end:7.2f}] {s.text.strip()}", flush=True)
-        print(f"Teste: {info.duration:.0f} s de áudio em {time.time() - comeco:.0f} s.", flush=True)
+        resumo = f"{len(linhas)} falas; {info.duration:.0f} s de áudio em {time.time() - comeco:.0f} s. Começo: {' '.join(linhas[:3])[:300]}"
+        print(f"::notice title=Teste do robô::{resumo}", flush=True)
 
 
 def main():
