@@ -1,6 +1,10 @@
 """
 The Bylinguals Daily — a edição do dia do Jornal do Club (09/10/2026; ver MAP_SYSTEM_CLUB_JORNAL_PROPOSTA.md no Portal).
 
+Desde 09/10/2026 (tarde): 9 TEMAS, e em cada tema 3 notícias dos Estados Unidos, 3 do mundo e 3 do Brasil. Cada tema roda
+num robô separado, em paralelo (variável TEMA). A notícia COMPLETA só sai quando 3 ou mais veículos noticiaram o assunto
+(ou é da NASA); o resto da vaga vira NOTA curta (2 a 3 frases) de um veículo só, com a mesma conferência.
+
 Roda grátis no GitHub Actions, com um modelo de IA aberto (Qwen2.5 14B, llama.cpp no processador):
  1. Lê os feeds. Fonte principal: The New York Times (seções) e CNN Brasil. Apoio: BBC, Guardian, DW, NPR e g1.
     De jornal, usa SÓ o título e o resumo que o próprio veículo publica no feed — nunca abre a matéria (direitos reservados).
@@ -30,56 +34,78 @@ API = os.environ.get("LLM_URL", "http://127.0.0.1:8080/v1/chat/completions")
 MODELO = os.environ.get("MODELO_ROTULO", "qwen2.5-14b")
 FORCAR = os.environ.get("FORCAR", "false") == "true"
 SECO = os.environ.get("SECO", "false") == "true"  # só escreve e mostra; não entrega ao Portal
-MAXIMO = int(os.environ.get("MAXIMO", "14"))
+POR_REGIAO = int(os.environ.get("POR_REGIAO", "3"))
+TEMA = os.environ.get("TEMA", "")
+SO_FEEDS = os.environ.get("SO_FEEDS", "false") == "true"  # só confere os feeds (sem IA)
 INICIO = time.time()
-LIMITE_S = 4.5 * 3600
+LIMITE_S = 5 * 3600
 AGENTE = "BylingualsRobo/1.0 (+https://github.com/othonmoraes0-cell/bylinguals-ia)"
 UA = {"User-Agent": "Mozilla/5.0 (" + AGENTE + ")"}
 
 NYT = "https://rss.nytimes.com/services/xml/rss/nyt/"
-PRINCIPAIS = [
-    ("The New York Times", "World", NYT + "World.xml"),
-    ("The New York Times", "World", NYT + "Americas.xml"),
-    ("The New York Times", "Business", NYT + "Business.xml"),
-    ("The New York Times", "Science", NYT + "Science.xml"),
-    ("The New York Times", "Health", NYT + "Health.xml"),
-    ("The New York Times", "Sports", NYT + "Sports.xml"),
-    ("The New York Times", "Culture", NYT + "Arts.xml"),
-    ("CNN Brasil", None, "https://www.cnnbrasil.com.br/feed/"),
-]
-APOIO = [
-    ("BBC", "https://feeds.bbci.co.uk/news/world/rss.xml"),
-    ("BBC", "https://feeds.bbci.co.uk/news/business/rss.xml"),
-    ("BBC", "https://feeds.bbci.co.uk/news/science_and_environment/rss.xml"),
-    ("BBC", "https://feeds.bbci.co.uk/news/health/rss.xml"),
-    ("BBC", "https://feeds.bbci.co.uk/sport/rss.xml"),
-    ("BBC", "https://feeds.bbci.co.uk/news/entertainment_and_arts/rss.xml"),
-    ("BBC", "https://feeds.bbci.co.uk/news/world/latin_america/rss.xml"),
-    ("The Guardian", "https://www.theguardian.com/world/rss"),
-    ("The Guardian", "https://www.theguardian.com/business/rss"),
-    ("The Guardian", "https://www.theguardian.com/science/rss"),
-    ("The Guardian", "https://www.theguardian.com/sport/rss"),
-    ("The Guardian", "https://www.theguardian.com/culture/rss"),
-    ("The Guardian", "https://www.theguardian.com/world/brazil/rss"),
-    ("DW", "https://rss.dw.com/rdf/rss-en-all"),
-    ("NPR", "https://feeds.npr.org/1001/rss.xml"),
-    ("g1", "https://g1.globo.com/rss/g1/"),
-    ("g1", "https://g1.globo.com/rss/g1/economia/"),
-    ("g1", "https://g1.globo.com/rss/g1/politica/"),
-    ("g1", "https://g1.globo.com/rss/g1/ciencia-e-saude/"),
-    ("ge", "https://ge.globo.com/rss/ge/"),
-    ("The New York Times", NYT + "HomePage.xml"),
-]
+NPR = "https://feeds.npr.org/{}/rss.xml"
+BBC = "https://feeds.bbci.co.uk/news/{}/rss.xml"
+GUA = "https://www.theguardian.com/{}/rss"
+FOLHA = "https://feeds.folha.uol.com.br/{}/rss091.xml"
+G1 = "https://g1.globo.com/rss/g1/{}/"
+CBS = "https://www.cbsnews.com/latest/rss/{}"
+FOX = "https://moxie.foxnews.com/google-publisher/{}.xml"
+ABC = "https://abcnews.go.com/abcnews/{}"
+CNNBR = "https://www.cnnbrasil.com.br/{}/feed/"
 NASA = "https://www.nasa.gov/news-release/feed/"
 
-SECAO_DA_CNN = [
-    (r"/esportes/", "Sports"),
-    (r"/economia/|/business/", "Business"),
-    (r"/internacional/", "World"),
-    (r"/saude/", "Health"),
-    (r"/tecnologia/|/ciencia/", "Science"),
-    (r"/entretenimento/|/pop/|/viagemegastronomia/", "Culture"),
-]
+# Fontes por tema e região: (veículo, feed). De jornal, SÓ título e resumo do feed. Veículos dos dois lados do espectro
+# político nos EUA (NYT, NPR, CBS, ABC e Fox) e várias redações no Brasil, para a notícia completa ter 3+ olhares.
+TEMAS = {
+    "politics": ("Politics & Elections", {
+        "US": [("The New York Times", NYT + "Politics.xml"), ("NPR", NPR.format(1014)), ("CBS News", CBS.format("politics")), ("Fox News", FOX.format("politics")), ("ABC News", ABC.format("politicsheadlines"))],
+        "World": [("The New York Times", NYT + "World.xml"), ("BBC", BBC.format("world")), ("The Guardian", GUA.format("world")), ("DW", "https://rss.dw.com/rdf/rss-en-all"), ("Al Jazeera", "https://www.aljazeera.com/xml/rss/all.xml"), ("France 24", "https://www.france24.com/en/rss")],
+        "Brazil": [("g1", G1.format("politica")), ("Folha de S.Paulo", FOLHA.format("poder")), ("CNN Brasil", CNNBR.format("politica")), ("Poder360", "https://www.poder360.com.br/feed/"), ("BBC News Brasil", "https://feeds.bbci.co.uk/portuguese/rss.xml")],
+    }),
+    "economy": ("Economy & Personal Finance", {
+        "US": [("The New York Times", NYT + "Economy.xml"), ("The New York Times", NYT + "YourMoney.xml"), ("NPR", NPR.format(1017)), ("CNBC", "https://www.cnbc.com/id/21324812/device/rss/rss.html"), ("CBS News", CBS.format("moneywatch"))],
+        "World": [("BBC", BBC.format("business")), ("The Guardian", GUA.format("business/economics")), ("DW", "https://rss.dw.com/rdf/rss-en-bus")],
+        "Brazil": [("g1", G1.format("economia")), ("InfoMoney", "https://www.infomoney.com.br/feed/"), ("Folha de S.Paulo", FOLHA.format("mercado")), ("CNN Brasil", CNNBR.format("economia"))],
+    }),
+    "business": ("Business", {
+        "US": [("The New York Times", NYT + "Business.xml"), ("NPR", NPR.format(1006)), ("CNBC", "https://www.cnbc.com/id/100003114/device/rss/rss.html"), ("ABC News", ABC.format("moneyheadlines")), ("The New York Times", NYT + "Technology.xml")],
+        "World": [("The Guardian", GUA.format("business")), ("BBC", BBC.format("technology")), ("DW", "https://rss.dw.com/rdf/rss-en-bus"), ("BBC", BBC.format("business"))],
+        "Brazil": [("Exame", "https://exame.com/feed/"), ("g1", G1.format("tecnologia")), ("CNN Brasil", CNNBR.format("economia/negocios")), ("Folha de S.Paulo", FOLHA.format("mercado"))],
+    }),
+    "science": ("Science", {
+        "US": [("The New York Times", NYT + "Science.xml"), ("NPR", NPR.format(1007)), ("CBS News", CBS.format("science")), ("ScienceDaily", "https://www.sciencedaily.com/rss/top/science.xml")],
+        "World": [("BBC", BBC.format("science_and_environment")), ("The Guardian", GUA.format("science")), ("New Scientist", "https://www.newscientist.com/feed/home/"), ("DW", "https://rss.dw.com/rdf/rss-en-sci")],
+        "Brazil": [("g1", G1.format("ciencia")), ("Folha de S.Paulo", FOLHA.format("ciencia")), ("Jornal da USP", "https://jornal.usp.br/feed/"), ("Pesquisa FAPESP", "https://revistapesquisa.fapesp.br/feed/")],
+    }),
+    "health": ("Health", {
+        "US": [("The New York Times", NYT + "Health.xml"), ("NPR", NPR.format(1128)), ("CBS News", CBS.format("health")), ("ABC News", ABC.format("healthheadlines")), ("Fox News", FOX.format("health"))],
+        "World": [("BBC", BBC.format("health")), ("The Guardian", GUA.format("society/health")), ("WHO", "https://www.who.int/rss-feeds/news-english.xml")],
+        "Brazil": [("g1", G1.format("saude")), ("Folha de S.Paulo", FOLHA.format("equilibrioesaude")), ("CNN Brasil", CNNBR.format("saude")), ("g1", G1.format("ciencia-e-saude"))],
+    }),
+    "sports": ("Sports", {
+        "US": [("The New York Times", NYT + "Sports.xml"), ("ESPN", "https://www.espn.com/espn/rss/news"), ("CBS Sports", "https://www.cbssports.com/rss/headlines/"), ("Fox News", FOX.format("sports"))],
+        "World": [("BBC", "https://feeds.bbci.co.uk/sport/rss.xml"), ("The Guardian", GUA.format("sport")), ("ESPN", "https://www.espn.com/espn/rss/soccer/news")],
+        "Brazil": [("ge", "https://ge.globo.com/rss/ge/"), ("Folha de S.Paulo", FOLHA.format("esporte")), ("CNN Brasil", CNNBR.format("esportes")), ("UOL", "https://rss.uol.com.br/feed/esporte.xml")],
+    }),
+    "culture": ("Culture", {
+        "US": [("The New York Times", NYT + "Arts.xml"), ("The New York Times", NYT + "Books.xml"), ("NPR", NPR.format(1008)), ("CBS News", CBS.format("entertainment"))],
+        "World": [("BBC", BBC.format("entertainment_and_arts")), ("The Guardian", GUA.format("culture")), ("The Guardian", GUA.format("books")), ("DW", "https://rss.dw.com/rdf/rss-en-cul")],
+        "Brazil": [("g1", G1.format("pop-arte")), ("Folha de S.Paulo", FOLHA.format("ilustrada")), ("CNN Brasil", CNNBR.format("entretenimento"))],
+    }),
+    "space": ("Space & Earth", {
+        "US": [("NASA", NASA), ("The New York Times", NYT + "Space.xml"), ("The New York Times", NYT + "Climate.xml"), ("Space.com", "https://www.space.com/feeds/all"), ("NPR", NPR.format(1025))],
+        "World": [("ESA", "https://www.esa.int/rssfeed/Our_Activities/Space_News"), ("The Guardian", GUA.format("environment")), ("BBC", BBC.format("science_and_environment")), ("Space.com", "https://www.space.com/feeds/all")],
+        "Brazil": [("g1", G1.format("natureza")), ("Folha de S.Paulo", FOLHA.format("ambiente")), ("g1", G1.format("ciencia")), ("Jornal da USP", "https://jornal.usp.br/feed/")],
+    }),
+    "entertainment": ("Entertainment & Curiosities", {
+        "US": [("The New York Times", NYT + "Movies.xml"), ("The New York Times", NYT + "Television.xml"), ("Variety", "https://variety.com/feed/"), ("The Hollywood Reporter", "https://www.hollywoodreporter.com/feed/"), ("Smithsonian", "https://www.smithsonianmag.com/rss/latest_articles/")],
+        "World": [("The Guardian", GUA.format("film")), ("The Guardian", GUA.format("music")), ("BBC", BBC.format("entertainment_and_arts")), ("Mental Floss", "https://www.mentalfloss.com/rss.xml")],
+        "Brazil": [("g1", G1.format("pop-arte")), ("CNN Brasil", CNNBR.format("entretenimento")), ("UOL", "https://rss.uol.com.br/feed/entretenimento.xml"), ("Folha de S.Paulo", FOLHA.format("ilustrada"))],
+    }),
+}
+REGIOES = ("US", "World", "Brazil")
+# Link que não é notícia (opinião, ao vivo, vídeo, podcast, quiz, newsletter).
+FORA = re.compile(r"/(opinion|opiniao|colunas|blogs?|live|ao-vivo|video|videos|podcasts?|quiz|newsletters?|interactive|crosswords|games)/", re.I)
 
 PARADAS = set(
     """the a an and or but of to in on at for with from by as is are was were be been has have had will would can could
@@ -157,13 +183,6 @@ def mesmo_assunto(a, b):
     return len(nomes_comuns) >= 2 and len(comuns) >= 3 and jaccard >= 0.12 and ((len(especificos) >= 1 and len(titulos) >= 1) or len(titulos) >= 3)
 
 
-def secao_da_cnn(link):
-    for padrao, secao in SECAO_DA_CNN:
-        if re.search(padrao, link):
-            return secao
-    return "Brazil"
-
-
 # ------------------------------------------------------------------ IA
 
 def ia(mensagens, max_tokens=1600, temperatura=0.3):
@@ -188,15 +207,14 @@ SISTEMA = (
 PORTUGUES = re.compile(r"\b(não|são|está|também|após|pessoas|governo|então|foram|ainda|segundo|disse)\b", re.I)
 
 
-def escrever(fatos, n_every, n_real, extra=""):
+def escrever(fatos, n_every, n_real, extra="", n_glossario=8):
     pedido = (
         f"{fatos}\n\nWrite a JSON object with exactly these keys:\n"
-        '- "section": one of Brazil, World, Business, Science, Health, Sports, Culture, Space & Earth\n'
         '- "headline_everyday": a short headline (max 10 words), simple English\n'
         f'- "everyday_sentences": a list of EXACTLY {n_every} sentences for CEFR A2 learners. Each sentence is complete (subject + verb), 8 to 14 words, common words, simple present or simple past.\n'
         '- "headline_real": a headline (max 12 words)\n'
         f'- "real_sentences": a list of EXACTLY {n_real} sentences for CEFR B1 learners, natural English, 12 to 22 words each: the main facts first, then what each source adds, then context from BACKGROUND (if any).\n'
-        '- "glossary": a list of EXACTLY 8 objects {"word": an English word or expression that appears in real_sentences, "pt": its meaning in Brazilian Portuguese}\n'
+        f'- "glossary": a list of EXACTLY {n_glossario} objects {{"word": an English word or expression that appears in real_sentences, "pt": its meaning in Brazilian Portuguese}}\n'
         'Everything must be in English except the "pt" values. If a FACT is in Portuguese, translate it into English. Do not repeat a fact. '
         f"If there are not enough facts for the number of sentences, write simpler sentences with the same facts: never invent. Return only the JSON.{extra}"
     )
@@ -245,10 +263,11 @@ def tirar_inventadas(frases, fatos):
     return [f for f in frases if not numeros_e_nomes_inventados(f, fatos)]
 
 
-def produzir(fatos, n_every, n_real):
+def produzir(fatos, n_every, n_real, nota=False):
     extra = ""
+    n_gl = 4 if nota else 8
     for tentativa in range(1, 4):
-        d = escrever(fatos, n_every, n_real, extra)
+        d = escrever(fatos, n_every, n_real, extra, n_gl)
         every = [str(x).strip() for x in d.get("everyday_sentences") or [] if str(x).strip()]
         real = [str(x).strip() for x in d.get("real_sentences") or [] if str(x).strip()]
         defeitos = []
@@ -257,7 +276,7 @@ def produzir(fatos, n_every, n_real):
         if len(every) < n_every - 1 or len(real) < n_real - 1:
             defeitos.append("not enough sentences")
         gl = [g for g in d.get("glossary") or [] if isinstance(g, dict) and g.get("word") and g.get("pt")]
-        if len(gl) < 5:
+        if len(gl) < (2 if nota else 5):
             defeitos.append("the glossary is empty or too short")
         if not defeitos:
             break
@@ -270,7 +289,7 @@ def produzir(fatos, n_every, n_real):
     every, real, fora = conferir_frases(fatos, every, real)
     if fora:
         print(f"    conferência tirou: {fora}", flush=True)
-    if len(every) < 4 or len(real) < 5:
+    if (len(every) < 2 or len(real) < 2) if nota else (len(every) < 4 or len(real) < 5):
         return None, f"sobrou pouco depois da conferência ({len(every)}/{len(real)})"
     texto_real = " ".join(real).lower()
     glossario = []
@@ -278,13 +297,12 @@ def produzir(fatos, n_every, n_real):
         if isinstance(g, dict) and g.get("word") and g.get("pt") and str(g["word"]).lower() in texto_real and len(glossario) < 10:
             if not any(x["termo"].lower() == str(g["word"]).lower() for x in glossario):
                 glossario.append({"termo": str(g["word"]).strip()[:60], "traducao": str(g["pt"]).strip()[:120]})
-    secao = d.get("section") if d.get("section") in ("Brazil", "World", "Business", "Science", "Health", "Sports", "Culture", "Space & Earth") else None
     return {
-        "secao": secao,
+        "tipo": "NOTA" if nota else "COMPLETA",
         "manchete": str(d.get("headline_real") or "").strip()[:160],
         "mancheteEveryday": str(d.get("headline_everyday") or "").strip()[:160],
-        "everyday": every[:10],
-        "real": real[:12],
+        "everyday": every[:4] if nota else every[:10],
+        "real": real[:4] if nota else real[:12],
         "glossario": glossario,
     }, None
 
@@ -371,50 +389,55 @@ def aviso(msg):
 
 # ------------------------------------------------------------------ edição
 
-def histórias():
-    pool = []
-    for veiculo, url in APOIO:
-        pool += itens_do_feed(url, veiculo)
-    principais = []
-    for veiculo, secao, url in PRINCIPAIS:
+def itens_da_regiao(feeds):
+    """Os itens de todos os feeds de uma região, com a posição no feed (o que o jornal pôs em cima vem primeiro)."""
+    vistos, itens = set(), []
+    for veiculo, url in feeds:
+        if url == NASA:
+            continue
         for posicao, it in enumerate(itens_do_feed(url, veiculo)):
-            if "/opinion/" in it["link"] or "/opiniao/" in it["link"] or len(it["resumo"].split()) < 8:
+            if it["link"] in vistos or FORA.search(it["link"]) or len(it["resumo"].split()) < 12:
                 continue
-            it["secao"] = secao or secao_da_cnn(it["link"])
+            vistos.add(it["link"])
             it["posicao"] = posicao
-            principais.append(it)
-            pool.append(it)
-    grupos = []
-    usados = set()
-    for p in sorted(principais, key=lambda x: x["posicao"]):
-        if p["link"] in usados:
+            itens.append(it)
+    return sorted(itens, key=lambda x: x["posicao"])
+
+
+def grupos_da_regiao(itens, quantos):
+    """Notícias completas: o mesmo acontecimento em 3+ veículos (uma fonte por veículo, até 6)."""
+    grupos, usados = [], set()
+    for p in itens:
+        if len(grupos) >= quantos or p["link"] in usados:
             continue
-        apoio = []
-        for it in pool:
-            if it["link"] == p["link"] or it["link"] in usados or any(a["link"] == it["link"] for a in apoio):
-                continue
-            if mesmo_assunto(p, it):
-                apoio.append(it)
-        veiculos = {p["veiculo"]} | {a["veiculo"] for a in apoio}
-        if len(veiculos) < 3:
-            continue
-        # Uma fonte de cada veículo, até 6, a principal primeiro.
+        apoio = [it for it in itens if it["link"] != p["link"] and it["link"] not in usados and mesmo_assunto(p, it)]
         escolhidas, vistos = [p], {p["veiculo"]}
         for a in apoio:
             if a["veiculo"] not in vistos and len(escolhidas) < 6:
                 escolhidas.append(a)
                 vistos.add(a["veiculo"])
+        if len(vistos) < 3:
+            continue
         for f in escolhidas:
             usados.add(f["link"])
-        grupos.append({"secao": p["secao"], "fontes": escolhidas})
-    # No máximo 2 por seção, na ordem de importância dos feeds.
-    por_secao, final = {}, []
-    for g in grupos:
-        if por_secao.get(g["secao"], 0) >= 2:
+        # O que também fala do mesmo assunto não vira nota repetida.
+        for a in apoio:
+            usados.add(a["link"])
+        grupos.append({"fontes": escolhidas})
+    return grupos, usados
+
+
+def notas_da_regiao(itens, usados, quantos):
+    """Notas curtas: um veículo, assuntos diferentes entre si e das completas, alternando os veículos."""
+    escolhidas, por_veiculo = [], {}
+    for it in sorted(itens, key=lambda x: (x["posicao"], por_veiculo.get(x["veiculo"], 0))):
+        if len(escolhidas) >= quantos:
+            break
+        if it["link"] in usados or any(mesmo_assunto(it, e) for e in escolhidas) or por_veiculo.get(it["veiculo"], 0) >= 2:
             continue
-        por_secao[g["secao"]] = por_secao.get(g["secao"], 0) + 1
-        final.append(g)
-    return final[:MAXIMO]
+        por_veiculo[it["veiculo"]] = por_veiculo.get(it["veiculo"], 0) + 1
+        escolhidas.append(it)
+    return escolhidas
 
 
 def da_nasa():
@@ -430,67 +453,127 @@ def da_nasa():
         imagem = None
         if meta and meta.image and re.match(r"https://([a-z0-9-]+\.)*nasa\.gov/", meta.image):
             imagem = {"url": meta.image, "credito": "NASA"}
-        return {"secao": "Space & Earth", "fontes": [{**it, "resumo": " ".join(texto.split()[:900])}], "imagem": imagem, "nasa": True}
+        return {"fontes": [{**it, "resumo": " ".join(texto.split()[:900])}], "imagem": imagem, "nasa": True}
     return None
 
 
-def main():
-    hoje = datetime.now(timezone(timedelta(hours=-3))).date().isoformat()
-    dia = os.environ.get("DIA") or hoje
-    print(f"Edição de {dia} ({MODELO})", flush=True)
-    if not SECO and not FORCAR:
-        r = portal("GET", f"/api/robo/jornal?dia={dia}")
-        if r is not None and r.status_code == 200 and r.json().get("existe"):
-            aviso(f"A edição de {dia} já está no Portal ({r.json().get('noticias')} notícias). Nada a fazer.")
-            return 0
-    grupos = histórias()
-    nasa = da_nasa()
-    if nasa:
-        grupos.append(nasa)
-    print(f"{len(grupos)} assuntos com fatos suficientes", flush=True)
-    noticias, descartadas = [], []
-    for g in grupos:
-        if time.time() - INICIO > LIMITE_S:
-            print("Tempo esgotado: o que foi escrito até aqui vai para o Portal.", flush=True)
-            break
-        principal = g["fontes"][0]
-        fatos = "FACTS:\n" + "\n".join(f"- {f['veiculo']}: {f['titulo']}. {f['resumo']}" for f in g["fontes"])
-        fundo = "" if g.get("nasa") else contexto_wikipedia(g["fontes"])
+def escrever_noticia(g, nota):
+    principal = g["fontes"][0]
+    fatos = "FACTS:\n" + "\n".join(f"- {f['veiculo']}: {f['titulo']}. {f['resumo']}" for f in g["fontes"])
+    if not nota and not g.get("nasa"):
+        fundo = contexto_wikipedia(g["fontes"])
         if fundo:
             fatos += "\n\n" + fundo
-        palavras = len(fatos.split())
+    palavras = len(fatos.split())
+    if nota:
+        n_every, n_real = 3, 3
+    else:
         n_every, n_real = (7, 9) if g.get("nasa") else ((6, 8) if palavras >= 180 else (5, 6))
-        print(f"Escrevendo [{g['secao']}] {principal['titulo']} ({len(g['fontes'])} fontes, {palavras} palavras de fato)", flush=True)
-        t0 = time.time()
-        try:
-            n, motivo = produzir(fatos, n_every, n_real)
-        except Exception as e:  # noqa: BLE001
-            n, motivo = None, f"erro: {e}"
-        if not n or not n["manchete"] or not n["mancheteEveryday"]:
-            descartadas.append(f"{principal['titulo']} ({motivo or 'sem manchete'})")
-            print(f"  descartada: {motivo}", flush=True)
-            continue
-        n["secao"] = g["secao"] if g["secao"] in ("Space & Earth", "Brazil") else (n["secao"] or g["secao"])
-        n["fontes"] = [{"veiculo": f["veiculo"], "titulo": f["titulo"][:300], "link": f["link"]} for f in g["fontes"]]
-        n["linkPrincipal"] = principal["link"]
-        n["imagem"] = g.get("imagem")
-        noticias.append(n)
-        print(f"  ok em {round(time.time() - t0)} s: {len(n['everyday'])}/{len(n['real'])} frases", flush=True)
+    try:
+        n, motivo = produzir(fatos, n_every, n_real, nota=nota)
+    except Exception as e:  # noqa: BLE001
+        n, motivo = None, f"erro: {e}"
+    if not n or not n["manchete"] or not n["mancheteEveryday"]:
+        return None, motivo or "sem manchete"
+    n["fontes"] = [{"veiculo": f["veiculo"], "titulo": f["titulo"][:300], "link": f["link"]} for f in g["fontes"]]
+    n["linkPrincipal"] = principal["link"]
+    n["imagem"] = g.get("imagem")
+    return n, None
+
+
+def so_feeds():
+    """Teste rápido (sem IA): quantos itens cada feed traz e quantas notícias completas e notas sairiam."""
+    linhas = ["# Feeds do Jornal", ""]
+    for chave, (nome, regioes) in TEMAS.items():
+        for regiao in REGIOES:
+            itens = itens_da_regiao(regioes[regiao])
+            grupos, usados = grupos_da_regiao(itens, POR_REGIAO)
+            notas = notas_da_regiao(itens, usados, POR_REGIAO - len(grupos))
+            linhas.append(f"- **{nome} · {regiao}**: {len(itens)} itens, {len(grupos)} completas, {len(notas)} notas")
+            for g in grupos:
+                linhas.append(f"  - COMPLETA ({', '.join(f['veiculo'] for f in g['fontes'])}): {g['fontes'][0]['titulo'][:110]}")
+            for it in notas:
+                linhas.append(f"  - NOTA ({it['veiculo']}): {it['titulo'][:110]}")
+    texto = "\n".join(linhas)
+    print(texto, flush=True)
+    os.makedirs("saida", exist_ok=True)
+    with open("saida/feeds.md", "w", encoding="utf-8") as f:
+        f.write(texto)
+    if os.environ.get("GITHUB_STEP_SUMMARY"):
+        with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as f:
+            f.write(texto)
+    return 0
+
+
+def main():
+    if SO_FEEDS:
+        return so_feeds()
+    if TEMA not in TEMAS:
+        print(f"TEMA inválido: {TEMA!r}. Use um de: {', '.join(TEMAS)}", flush=True)
+        return 1
+    nome, regioes = TEMAS[TEMA]
+    hoje = datetime.now(timezone(timedelta(hours=-3))).date().isoformat()
+    dia = os.environ.get("DIA") or hoje
+    print(f"Edição de {dia} · {nome} ({MODELO})", flush=True)
+    if not SECO and not FORCAR:
+        r = portal("GET", f"/api/robo/jornal?dia={dia}&tema={urllib.parse.quote(nome)}")
+        if r is not None and r.status_code == 200 and r.json().get("existe"):
+            aviso(f"{nome}: já está no Portal ({r.json().get('noticias')} notícias). Nada a fazer.")
+            return 0
+
+    noticias, descartadas = [], []
+    for regiao in REGIOES:
+        feeds = regioes[regiao]
+        itens = itens_da_regiao(feeds)
+        grupos, usados = grupos_da_regiao(itens, POR_REGIAO)
+        if any(url == NASA for _, url in feeds):
+            nasa = da_nasa()
+            if nasa:
+                grupos = [nasa] + grupos[: POR_REGIAO - 1]
+        feitas = 0
+        for g in grupos:
+            if feitas >= POR_REGIAO or time.time() - INICIO > LIMITE_S:
+                break
+            print(f"[{regiao}] COMPLETA: {g['fontes'][0]['titulo']} ({len(g['fontes'])} fontes)", flush=True)
+            t0 = time.time()
+            n, motivo = escrever_noticia(g, nota=False)
+            if n:
+                n.update(secao=nome, regiao=regiao)
+                noticias.append(n)
+                feitas += 1
+                print(f"  ok em {round(time.time() - t0)} s", flush=True)
+            else:
+                descartadas.append(f"[{regiao}] {g['fontes'][0]['titulo']} ({motivo})")
+                print(f"  descartada: {motivo}", flush=True)
+        # O que faltou para chegar a POR_REGIAO vira nota curta (com folga, porque a conferência pode tirar alguma).
+        candidatas = notas_da_regiao(itens, usados, (POR_REGIAO - feitas) * 2)
+        for it in candidatas:
+            if feitas >= POR_REGIAO or time.time() - INICIO > LIMITE_S:
+                break
+            print(f"[{regiao}] NOTA: {it['titulo']} ({it['veiculo']})", flush=True)
+            n, motivo = escrever_noticia({"fontes": [it]}, nota=True)
+            if n:
+                n.update(secao=nome, regiao=regiao)
+                noticias.append(n)
+                feitas += 1
+            else:
+                descartadas.append(f"[{regiao}] nota: {it['titulo']} ({motivo})")
+                print(f"  descartada: {motivo}", flush=True)
 
     if not noticias:
-        aviso("Nenhuma notícia passou na conferência hoje.")
+        aviso(f"{nome}: nenhuma notícia passou na conferência hoje.")
         return 1
     print("Traduzindo…", flush=True)
     for n in noticias:
         n["everydayPt"] = traduzir(n["everyday"])
         n["realPt"] = traduzir(n["real"])
-    edicao = {"dia": dia, "modelo": MODELO, "noticias": noticias}
+    edicao = {"dia": dia, "modelo": MODELO, "temas": [nome], "noticias": noticias}
     os.makedirs("saida", exist_ok=True)
     with open("saida/edicao.json", "w", encoding="utf-8") as f:
         json.dump({**edicao, "descartadas": descartadas}, f, ensure_ascii=False, indent=1)
-    resumo = [f"# The Bylinguals Daily — {dia}", "", f"{len(noticias)} notícias · {len(descartadas)} descartadas", ""]
+    resumo = [f"# {nome} — {dia}", "", f"{len(noticias)} notícias · {len(descartadas)} descartadas", ""]
     for n in noticias:
-        resumo += [f"## [{n['secao']}] {n['manchete']}", " ".join(n["real"]), "", "Fontes: " + ", ".join(f["veiculo"] for f in n["fontes"]), ""]
+        resumo += [f"## [{n['regiao']} · {n['tipo']}] {n['manchete']}", " ".join(n["real"]), "", "Fontes: " + ", ".join(f["veiculo"] for f in n["fontes"]), ""]
     resumo += ["## Descartadas", *[f"- {d}" for d in descartadas]]
     if os.environ.get("GITHUB_STEP_SUMMARY"):
         with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as f:
@@ -498,10 +581,10 @@ def main():
     with open("saida/edicao.md", "w", encoding="utf-8") as f:
         f.write("\n".join(resumo))
     if SECO:
-        aviso(f"Teste seco: {len(noticias)} notícias escritas, nada entregue.")
+        aviso(f"Teste seco ({nome}): {len(noticias)} notícias escritas, nada entregue.")
         return 0
     r = portal("POST", "/api/robo/jornal", edicao)
-    aviso(f"Portal: HTTP {r.status_code} {r.text[:300]}")
+    aviso(f"{nome} → Portal: HTTP {r.status_code} {r.text[:300]}")
     return 0 if r.status_code == 200 else 1
 
 
