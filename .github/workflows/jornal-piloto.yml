@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write # grava o resultado no ramo "piloto-jornal" (só texto, para a equipe ler)
 
 jobs:
   piloto:
@@ -27,14 +27,12 @@ jobs:
           python-version: "3.11"
       - name: Ferramentas
         run: pip install trafilatura==1.12.2
-      - name: llama.cpp (binário pronto)
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: llama.cpp (compilado aqui, só o servidor)
         run: |
-          mkdir -p llama && cd llama
-          gh release download -R ggml-org/llama.cpp --pattern '*bin-ubuntu-x64.zip' --clobber
-          unzip -q -o *.zip
-          find . -name llama-server -type f | head -1
+          git clone --depth 1 https://github.com/ggml-org/llama.cpp llama
+          cmake -S llama -B llama/build -DLLAMA_CURL=OFF -DGGML_NATIVE=ON -DCMAKE_BUILD_TYPE=Release > /dev/null
+          cmake --build llama/build --target llama-server -j "$(nproc)" > /dev/null
+          ls -la llama/build/bin/llama-server
       - name: Modelo (cache)
         uses: actions/cache@v4
         with:
@@ -46,8 +44,7 @@ jobs:
         env:
           MODELO_ROTULO: ${{ matrix.rotulo }}
         run: |
-          SERVER=$(find llama -name llama-server -type f | head -1)
-          export LD_LIBRARY_PATH="$(dirname "$SERVER"):${LD_LIBRARY_PATH:-}"
+          SERVER=llama/build/bin/llama-server
           nproc; free -g
           "$SERVER" -m modelo.gguf -c 6144 -t $(nproc) --port 8080 > servidor.log 2>&1 &
           for i in $(seq 1 120); do curl -s localhost:8080/health | grep -q ok && break; sleep 2; done
@@ -56,8 +53,15 @@ jobs:
       - name: Registro do servidor
         if: always()
         run: tail -n 30 servidor.log || true
-      - uses: actions/upload-artifact@v4
+      - name: Guardar o resultado no ramo piloto-jornal
         if: always()
-        with:
-          name: piloto-${{ matrix.rotulo }}
-          path: piloto/
+        run: |
+          mkdir -p saida && cp piloto/resultado.md "saida/${{ matrix.rotulo }}.md" 2>/dev/null || echo "sem resultado" > "saida/${{ matrix.rotulo }}.md"
+          cp piloto/resultado.json "saida/${{ matrix.rotulo }}.json" 2>/dev/null || true
+          tail -n 40 servidor.log > "saida/${{ matrix.rotulo }}-servidor.log" 2>/dev/null || true
+          git config user.name "robo-bylinguals" && git config user.email "robo@users.noreply.github.com"
+          for tentativa in 1 2 3 4 5; do
+            rm -rf ramo && git fetch -q origin piloto-jornal 2>/dev/null && git worktree add -q ramo FETCH_HEAD 2>/dev/null || { git worktree add -q --detach ramo && (cd ramo && git checkout -q --orphan tmp && git rm -rqf . 2>/dev/null || true); }
+            cp saida/* ramo/ && (cd ramo && git add -A && git commit -qm "Piloto: ${{ matrix.rotulo }}" && git push -q origin HEAD:piloto-jornal) && break
+            git worktree remove --force ramo || true; sleep $((tentativa * 7))
+          done

@@ -23,11 +23,14 @@ MODELO = os.environ.get("MODELO_ROTULO", "modelo")
 QUANTAS = int(os.environ.get("QUANTAS", "4"))
 UA = {"User-Agent": "Mozilla/5.0 (Bylinguals robo; piloto do jornal)"}
 
+# Decisão do usuário (09/10, 12h01): CNN Brasil, The New York Times e NASA. De jornal com direitos reservados o robô lê só o
+# que o próprio jornal publica no feed (título e resumo) e nunca a matéria inteira: o texto do Portal é escrito do zero,
+# com os fatos, e cita a fonte com o link. A NASA é domínio público: dá para ler a matéria toda.
 FONTES = [
-    {"nome": "Agência Brasil (EN)", "licenca": "CC BY (Agência Brasil/EBC)", "feeds": ["https://agenciabrasil.ebc.com.br/en/rss/ultimasnoticias/feed.xml", "https://agenciabrasil.ebc.com.br/en/rss/geral/feed.xml"], "pagina": "https://agenciabrasil.ebc.com.br/en", "padrao": r'href="(/en/[a-z-]+/noticia/\d{4}-\d{2}/[^"]+)"'},
-    {"nome": "Global Voices", "licenca": "CC BY 3.0 (Global Voices)", "feeds": ["https://globalvoices.org/feed/"]},
+    {"nome": "The New York Times (feed: título e resumo)", "licenca": "Direitos reservados: só os fatos do feed, texto próprio e link", "so_feed": True, "feeds": ["https://rss.nytimes.com/services/xml/rss/nyt/World.xml"]},
+    {"nome": "CNN Brasil (feed: título e resumo)", "licenca": "Direitos reservados: só os fatos do feed, texto próprio e link", "so_feed": True, "feeds": ["https://www.cnnbrasil.com.br/feed/", "https://www.cnnbrasil.com.br/rss/"]},
+    {"nome": "The New York Times · Science (feed: título e resumo)", "licenca": "Direitos reservados: só os fatos do feed, texto próprio e link", "so_feed": True, "feeds": ["https://rss.nytimes.com/services/xml/rss/nyt/Science.xml"]},
     {"nome": "NASA", "licenca": "Domínio público (NASA)", "feeds": ["https://www.nasa.gov/news-release/feed/"]},
-    {"nome": "VOA Learning English", "licenca": "Domínio público (VOA), exceto AP/Reuters/AFP", "feeds": ["https://learningenglish.voanews.com/api/zkm-qem$-o", "https://learningenglish.voanews.com/api/"]},
 ]
 
 
@@ -47,15 +50,17 @@ def itens_do_feed(xml_texto):
         tag = it.tag.split("}")[-1]
         if tag not in ("item", "entry"):
             continue
-        titulo = link = ""
+        titulo = link = resumo = ""
         for f in it:
             t = f.tag.split("}")[-1]
             if t == "title":
                 titulo = (f.text or "").strip()
             elif t == "link":
                 link = (f.text or f.get("href") or "").strip()
+            elif t in ("description", "summary") and not resumo:
+                resumo = re.sub(r"<[^>]+>", " ", html.unescape(f.text or "")).strip()
         if titulo and link:
-            itens.append({"titulo": html.unescape(titulo), "link": link})
+            itens.append({"titulo": html.unescape(titulo), "link": link, "resumo": re.sub(r"\s+", " ", resumo)})
     return itens
 
 
@@ -95,7 +100,7 @@ PROMPT_SISTEMA = (
 )
 
 
-def pedir(fonte_nome, texto):
+def pedir(fonte_nome, texto, so_feed=False):
     palavras = texto.split()
     corte = " ".join(palavras[:1100])
     usuario = (
@@ -103,10 +108,16 @@ def pedir(fonte_nome, texto):
         "Write a JSON object with exactly these keys:\n"
         '- "section": one of Brazil, World, Science & Tech, Sports, Business, Culture, Health, Environment\n'
         '- "headline_everyday": a short headline (max 10 words), simple English\n'
-        '- "everyday": the news in 110 to 160 words, CEFR A2 level: short sentences (max 15 words), common words, simple present and simple past\n'
-        '- "headline_real": a headline (max 12 words)\n'
-        '- "real": the news in 180 to 250 words, CEFR B1 level, natural English, with the main facts and context from the SOURCE\n'
-        '- "glossary": a list of 8 objects {"word": English word or expression used in "real", "pt": short meaning in Brazilian Portuguese}\n'
+        + (
+            '- "everyday": the news in 50 to 90 words, CEFR A2 level: short sentences (max 15 words), common words, simple present and simple past. The SOURCE is short: do NOT add anything that is not in it\n'
+            '- "headline_real": a headline (max 12 words)\n'
+            '- "real": the news in 80 to 130 words, CEFR B1 level, natural English. The SOURCE is short: do NOT add anything that is not in it\n'
+            if so_feed
+            else '- "everyday": the news in 110 to 160 words, CEFR A2 level: short sentences (max 15 words), common words, simple present and simple past\n'
+            '- "headline_real": a headline (max 12 words)\n'
+            '- "real": the news in 180 to 250 words, CEFR B1 level, natural English, with the main facts and context from the SOURCE\n'
+        )
+        + '- "glossary": a list of 8 objects {"word": English word or expression used in "real", "pt": short meaning in Brazilian Portuguese}\n'
         "Return only the JSON."
     )
     corpo = {
@@ -160,7 +171,15 @@ def main():
     escolhidas = []
     for fonte in FONTES:
         print(f"Fonte: {fonte['nome']}")
-        for c in candidatos(fonte)[:6]:
+        for c in candidatos(fonte)[:8]:
+            if fonte.get("so_feed"):
+                titulo, texto = c["titulo"], f"{c['titulo']}. {c.get('resumo', '')}".strip()
+                if len(texto.split()) < 15:
+                    print(f"  resumo curto demais: {c['link']}")
+                    continue
+                escolhidas.append({"fonte": fonte["nome"], "licenca": fonte["licenca"], "link": c["link"], "titulo": titulo, "texto": texto, "so_feed": True})
+                print(f"  escolhida (só feed): {titulo} ({len(texto.split())} palavras)")
+                break
             try:
                 titulo, texto = texto_da_materia(c["link"])
             except Exception as e:  # noqa: BLE001
@@ -180,7 +199,7 @@ def main():
     for e in escolhidas:
         print(f"Escrevendo: {e['titulo']}")
         try:
-            dados, gasto, uso, bruto = pedir(e["fonte"], e["texto"])
+            dados, gasto, uso, bruto = pedir(e["fonte"], e["texto"], e.get("so_feed", False))
         except Exception as erro:  # noqa: BLE001
             print(f"  falhou: {erro}")
             linhas += [f"## {e['titulo']}", f"Falhou: {erro}", ""]
