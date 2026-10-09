@@ -1,0 +1,63 @@
+name: Piloto do Jornal (IA grátis)
+
+# Só para avaliar (09/10/2026): escreve 4 notícias de fontes abertas em 2 níveis com um modelo aberto, no processador.
+# Não mexe no Portal. O resultado fica no resumo da execução e no artefato "piloto-<modelo>".
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  piloto:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - rotulo: qwen2.5-7b
+            url: https://huggingface.co/bartowski/Qwen2.5-7B-Instruct-GGUF/resolve/main/Qwen2.5-7B-Instruct-Q4_K_M.gguf
+          - rotulo: qwen2.5-3b
+            url: https://huggingface.co/bartowski/Qwen2.5-3B-Instruct-GGUF/resolve/main/Qwen2.5-3B-Instruct-Q4_K_M.gguf
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Ferramentas
+        run: pip install trafilatura==1.12.2
+      - name: llama.cpp (binário pronto)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p llama && cd llama
+          gh release download -R ggml-org/llama.cpp --pattern '*bin-ubuntu-x64.zip' --clobber
+          unzip -q -o *.zip
+          find . -name llama-server -type f | head -1
+      - name: Modelo (cache)
+        uses: actions/cache@v4
+        with:
+          path: modelo.gguf
+          key: gguf-${{ matrix.rotulo }}
+      - name: Baixar o modelo
+        run: test -s modelo.gguf || curl -sSL -o modelo.gguf "${{ matrix.url }}"; ls -lh modelo.gguf
+      - name: Escrever as notícias
+        env:
+          MODELO_ROTULO: ${{ matrix.rotulo }}
+        run: |
+          SERVER=$(find llama -name llama-server -type f | head -1)
+          export LD_LIBRARY_PATH="$(dirname "$SERVER"):${LD_LIBRARY_PATH:-}"
+          nproc; free -g
+          "$SERVER" -m modelo.gguf -c 6144 -t $(nproc) --port 8080 > servidor.log 2>&1 &
+          for i in $(seq 1 120); do curl -s localhost:8080/health | grep -q ok && break; sleep 2; done
+          curl -s localhost:8080/health
+          python robo/jornal_piloto.py
+      - name: Registro do servidor
+        if: always()
+        run: tail -n 30 servidor.log || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: piloto-${{ matrix.rotulo }}
+          path: piloto/
