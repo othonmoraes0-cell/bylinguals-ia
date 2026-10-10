@@ -46,6 +46,7 @@ jobs:
           open(os.environ["GITHUB_STEP_SUMMARY"], "a").write(texto + "\n")
           enc = lambda t: t.replace("%", "%25").replace("\r", "").replace("\n", "%0A")
           print("::notice title=Tradução::" + enc(f"{feitos} de {tot} capítulos traduzidos\n" + "\n".join(f"{t['titulo']}: {t['traduzidos']}/{t['capitulos']}" for t in s["traducao"])))
+          print("::notice title=Banco::" + enc(f"{s.get('bancoMb')} MB · limites: {s.get('limitesDoBanco')}"))
           d = s.get("dicionario") or {}
           print("::notice title=Dicionário::" + enc(f"publicados {d.get('publicados')} · por estado {d.get('porEstado')} · por tipo {d.get('porTipo')} · sugestões {d.get('sugestoes')} · banco {s.get('bancoMb')} MB"))
           for a in (s.get("amostraDoDicionario") or [])[:3]:
