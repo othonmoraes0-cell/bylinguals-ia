@@ -3,7 +3,7 @@ name: Robô de IA
 # Pergunta ao Portal se há legenda ou sincronia para fazer. Repositório público: os minutos do GitHub Actions são grátis.
 on:
   schedule:
-    - cron: "4,19,34,49 * * * *"
+    - cron: "4 * * * *" # de hora em hora (10/10/2026): cada consulta acorda o banco (Neon grátis: 100 h de compute por mês); o Portal chama o robô na hora quando entra tarefa
   workflow_dispatch:
     inputs:
       url_de_teste:
