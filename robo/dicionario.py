@@ -86,9 +86,19 @@ def sentido_bom(s):
     return bool(s.get("glosses"))
 
 
+FRACAS = {"unstressed", "weak", "weak-form", "reduced", "clipping", "casual", "rapid"}
+
+
 def ipa_de(sounds):
+    """A pronúncia de dicionário: a forma forte primeiro ("my" é /maɪ/; /mɪ/ é a forma fraca, sem acento na frase)."""
     uk = us = livre = None
-    for s in sounds or []:
+    def fraca(x):
+        nota = " ".join(str(x.get(k) or "") for k in ("note", "raw_tags", "qualifier")).lower()
+        return bool(tags_de(x) & FRACAS) or "weak" in nota or "unstressed" in nota
+
+    for s in sorted(sounds or [], key=fraca):
+        if fraca(s):
+            continue
         ipa = s.get("ipa")
         if not ipa or not ipa.startswith(("/", "[")):
             continue
