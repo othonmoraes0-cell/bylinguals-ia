@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       modo:
-        description: "base | enriquecer | sugestoes | refazer (volta os verbetes do robô para a fila)"
+        description: "base | enriquecer | sugestoes | traduzir (sentidos da base para o português) | refazer"
         default: "enriquecer"
       maquinas:
         description: "Quantas máquinas escrevem ao mesmo tempo (enriquecer)"
@@ -37,7 +37,7 @@ jobs:
           MODO="${{ inputs.modo || 'enriquecer' }}"
           N="${{ inputs.maquinas || '10' }}"
           if [ "$MODO" = "sugestoes" ]; then N=1; fi
-          if [ "$MODO" = "base" ]; then N=1; fi
+          if [ "$MODO" = "base" ] || [ "$MODO" = "refazer" ]; then N=1; fi
           echo "modo=$MODO" >> "$GITHUB_OUTPUT"
           echo "maquinas=$(python3 -c "import json;print(json.dumps(list(range(1, min(int('$N'), 16) + 1))))")" >> "$GITHUB_OUTPUT"
 
@@ -63,7 +63,7 @@ jobs:
 
   escrever:
     needs: plano
-    if: needs.plano.outputs.modo != 'base' && needs.plano.outputs.modo != 'refazer'
+    if: needs.plano.outputs.modo == 'enriquecer' || needs.plano.outputs.modo == 'sugestoes'
     runs-on: ubuntu-latest
     timeout-minutes: 355
     strategy:
@@ -149,3 +149,34 @@ jobs:
       - name: Registro do servidor
         if: failure()
         run: tail -n 40 servidor.log || true
+
+  traduzir:
+    needs: plano
+    if: needs.plano.outputs.modo == 'traduzir'
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    strategy:
+      fail-fast: false
+      matrix:
+        maquina: ${{ fromJson(needs.plano.outputs.maquinas) }}
+    env:
+      SITE_URL: ${{ vars.SITE_URL || 'https://www.bylinguals.com.br' }}
+      MAQUINA: ${{ matrix.maquina }}
+      MAQUINAS: ${{ inputs.maquinas || '10' }}
+      LIMITE_HORAS: "5.2"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Tradutor (cache)
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: hf-opus-mt-tc-big-en-pt-v1
+      - name: Instalar o tradutor
+        run: |
+          pip install -q torch==2.5.1 --index-url https://download.pytorch.org/whl/cpu
+          pip install -q -r robo/requirements-traducao.txt requests==2.32.3
+      - name: Traduzir os sentidos da base
+        run: python robo/dicionario.py traduzir

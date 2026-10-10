@@ -485,6 +485,78 @@ def fazer_enriquecer(maquina, so_sugestoes=False):
     aviso(f"Máquina {maquina}", f"{feitos} verbetes escritos, {sugestoes} sugestões preparadas, {erros} erros; média {media:.0f} s por verbete")
 
 
+# ------------------------------------------------------------------------------------------------ tradução da base
+
+MODELO_DE_TRADUCAO = "Helsinki-NLP/opus-mt-tc-big-en-pt"
+
+
+def carregar_tradutor():
+    import torch
+    from transformers import MarianMTModel, MarianTokenizer
+
+    torch.set_num_threads(os.cpu_count() or 4)
+    tok = MarianTokenizer.from_pretrained(MODELO_DE_TRADUCAO)
+    mod = MarianMTModel.from_pretrained(MODELO_DE_TRADUCAO).eval()
+    vocab = tok.get_vocab()
+    prefixo = next((p for p in (">>pob<<", ">>por<<", ">>pt_br<<", ">>pt<<") if p in vocab), "")
+    return torch, tok, mod, prefixo
+
+
+def limpar_definicao(t):
+    # Definições do Wiktionary juntam sentidos com "; " e às vezes trazem "[…]".
+    t = re.sub(r"\[…\]|\[\.\.\.\]", "…", t)
+    return t.strip()
+
+
+def fazer_traducao_da_base(maquina, maquinas):
+    """Traduz para o português os sentidos (e os exemplos curtos) da base aberta, do mais usado ao menos usado."""
+    torch, tok, mod, prefixo = carregar_tradutor()
+
+    def traduzir(textos):
+        saida = []
+        for i in range(0, len(textos), 24):
+            pedaco = [(prefixo + " " + x).strip() for x in textos[i : i + 24]]
+            entrada = tok(pedaco, return_tensors="pt", padding=True, truncation=True, max_length=200)
+            with torch.inference_mode():
+                gerado = mod.generate(**entrada, num_beams=1, max_new_tokens=220)
+            saida += [x.strip() for x in tok.batch_decode(gerado, skip_special_tokens=True)]
+        return saida
+
+    feitos = 0
+    t0 = time.time()
+    while time.time() - INICIO < LIMITE_DE_TEMPO:
+        r = portal("POST", "/api/robo/dicionario/para-traduzir", {"quantos": 120, "maquina": int(maquina), "maquinas": int(maquinas)})
+        if r.status_code != 200:
+            aviso("Tradução: erro", f"HTTP {r.status_code} {r.text[:300]}")
+            break
+        itens = r.json().get("itens") or []
+        if not itens:
+            print("Nada mais para traduzir.", flush=True)
+            break
+        textos, onde = [], []
+        for n, it in enumerate(itens):
+            for k, sdef in enumerate(it["sentidos"]):
+                textos.append(limpar_definicao(sdef["definicao"])[:600])
+                onde.append((n, k, "definicao"))
+                ex = sdef.get("exemplo")
+                if ex and len(ex) <= 220:
+                    textos.append(ex)
+                    onde.append((n, k, "exemplo"))
+        traduzidos = traduzir(textos) if textos else []
+        resultado = [{"id": it["id"], "sentidos": [{"definicao": ""} for _ in it["sentidos"]]} for it in itens]
+        for (n, k, campo), tr in zip(onde, traduzidos):
+            resultado[n]["sentidos"][k][campo] = tr[:780]
+        for it in resultado:
+            it["sentidos"] = [x if x.get("definicao") else {"definicao": "—"} for x in it["sentidos"]]
+        rr = portal("POST", "/api/robo/dicionario/traducao", {"itens": resultado})
+        if rr.status_code != 200:
+            aviso("Tradução: erro ao gravar", f"HTTP {rr.status_code} {rr.text[:300]}")
+            break
+        feitos += len(itens)
+        print(f"  {feitos} verbetes traduzidos ({len(textos)} trechos neste lote), {time.time() - t0:.0f} s", flush=True)
+    aviso(f"Tradução da base · máquina {maquina}", f"{feitos} verbetes traduzidos em {time.time() - t0:.0f} s")
+
+
 if __name__ == "__main__":
     modo = sys.argv[1] if len(sys.argv) > 1 else "enriquecer"
     if modo == "refazer":
@@ -492,6 +564,9 @@ if __name__ == "__main__":
         r = portal("POST", "/api/robo/dicionario/refazer", {"antesDe": os.environ.get("REFAZER_ANTES_DE") or time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())})
         aviso("Refazer", f"HTTP {r.status_code} {r.text[:300]}")
         sys.exit(0 if r.status_code == 200 else 1)
+    if modo == "traduzir":
+        fazer_traducao_da_base(os.environ.get("MAQUINA", "1"), os.environ.get("MAQUINAS", "1"))
+        sys.exit(0)
     if modo == "base":
         fazer_base(int(os.environ.get("LIMITE_PALAVRAS", "25000")))
     elif modo == "sugestoes":
