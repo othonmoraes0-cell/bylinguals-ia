@@ -341,20 +341,20 @@ Regras (verbete CURTO e direto, foco no mundo das empresas):
 - Português do Brasil nas explicações. Frases curtas. Nada de enrolação.
 - Exemplos e frases em inglês do ambiente de trabalho (reunião, e-mail, cliente, projeto, prazo, equipe), naturais e atuais, com tradução. Se a palavra quase não aparece no trabalho, use um exemplo do dia a dia de um adulto.
 - Escreva com as suas palavras. Nunca copie definições de dicionários publicados.
-- conceito: 1 ou 2 frases curtas.
+- conceito: 1 ou 2 frases curtas, começando com letra maiúscula, que digam o que a palavra significa de verdade (não "marcador sintático").
 - traducoes: SÓ palavras em PORTUGUÊS, as mais usadas, da mais comum para a menos comum. Nunca repita a palavra em inglês.
 - sentidos: só os sentidos reais e importantes (até 3), guiados pelos sentidos da base; nunca invente sentido. Definição curta + 1 exemplo.
-- Todo exemplo em inglês tem que ser gramaticalmente correto e usar a entrada exatamente no sentido descrito. A tradução fica só no campo de tradução, nunca entre parênteses no exemplo.
+- TODO exemplo, frase e collocation tem que CONTER a palavra da entrada (ou uma forma dela), ser gramaticalmente correto e usá-la no sentido descrito. Nunca dê um exemplo com outra palavra no lugar. A tradução fica só no campo de tradução, nunca entre parênteses no exemplo.
 - collocations: as combinações mais frequentes no trabalho, com tradução.
 - padroes: estruturas de uso desta palavra em notação de professor (verbo + -ing, adjetivo + preposição etc.), com exemplo. Só padrões que usam a própria entrada.
 - frases: frases prontas úteis no trabalho.
 - alternativas: palavras em INGLÊS parecidas com a entrada, e a diferença em uma frase em português. Vazio se não houver.
 - phrasalVerbs e idioms: só os reais e usados hoje, de preferência no trabalho. Vazio se não houver.
-- erroComum: o erro típico de brasileiros (falso cognato, preposição, tradução literal, pronúncia), em uma frase. Vazio se não houver.
+- erroComum: EM PORTUGUÊS, o erro típico de brasileiros com esta palavra (falso cognato, preposição errada, tradução literal, pronúncia), em uma frase, com o certo e o errado. Vazio se não houver um erro típico.
 - areas: só se for termo de uma área profissional; senão vazio.
 - nivel: o nível CEFR em que se aprende a palavra.
 - intencoes: o que a pessoa quer dizer ao usar a palavra, em português, bem curto (um verbo no infinitivo + complemento).
-- relacionados: palavras do mesmo campo, em inglês."""
+- relacionados: palavras soltas do mesmo campo, em inglês (não repita as collocations)."""
 
 
 def pedir_verbete(lema, tipo, base, contexto=None):
@@ -379,7 +379,7 @@ def pedir_verbete(lema, tipo, base, contexto=None):
     r.raise_for_status()
     texto = r.json()["choices"][0]["message"]["content"]
     v = json.loads(texto)
-    return conferir(lema, arrumar(v))
+    return conferir(lema, arrumar(v), (b.get("formas") or []))
 
 
 EXEMPLOS_DO_ENUNCIADO = {"suggest + -ing", "be good at + noun", "cobrar um prazo", "pedir desculpas"}
@@ -401,7 +401,22 @@ def lingua(texto):
     return "en" if en > pt else "pt"
 
 
-def conferir(lema, v):
+def usa_a_entrada(frase, lema, formas=()):
+    """A frase usa mesmo a palavra do verbete? (aceita plural, -s, -ed, -ing, contração e maiúscula)"""
+    texto = " " + re.sub(r"[^a-zà-ÿ'\- ]+", " ", (frase or "").lower()) + " "
+    alvos = [lema.lower()] + [f.lower() for f in formas or []]
+    for alvo in alvos:
+        if not alvo:
+            continue
+        if f" {alvo} " in texto or f" {alvo}" in texto and re.search(rf" {re.escape(alvo)}(s|es|ed|ing|'s|'t|'ll|'re|'ve|d|n't)?[ ,.]", texto + " "):
+            return True
+        # Verbo irregular ou raiz: pelo menos os 4 primeiros caracteres como começo de palavra.
+        if len(alvo) >= 5 and re.search(rf" {re.escape(alvo[:4])}[a-zà-ÿ']*", texto):
+            return True
+    return False
+
+
+def conferir(lema, v, formas=()):
     """Conferência automática antes de gravar (piloto de 09/10/2026). Devolve o verbete limpo ou levanta erro."""
     minus = lema.lower().strip()
     v["traducoes"] = [t for t in v.get("traducoes") or [] if t.strip() and t.strip().lower() != minus and lingua(t) != "en"]
@@ -416,8 +431,26 @@ def conferir(lema, v):
             ex = x.get("exemplo") or ""
             # Tradução entre parênteses dentro do exemplo em inglês: tira.
             x["exemplo"] = re.sub(r"\s*\([^)]*\)\s*$", "", ex).strip() or ex
+    # O exemplo tem que USAR a palavra do verbete (o 14B escreveu "She comes from Brazil." no verbete de "of").
+    for x in v.get("sentidos") or []:
+        if x.get("exemplo") and not usa_a_entrada(x["exemplo"], lema, formas):
+            x.pop("exemplo", None)
+            x.pop("exemploPt", None)
+    v["padroes"] = [p for p in v.get("padroes") or [] if not p.get("exemplo") or usa_a_entrada(p["exemplo"], lema, formas)]
+    v["frases"] = [f for f in v.get("frases") or [] if usa_a_entrada(f.get("en", ""), lema, formas)]
+    v["collocations"] = [c for c in v.get("collocations") or [] if usa_a_entrada(c.get("expressao", ""), lema, formas)]
+    # As explicações são em português; o erro comum em inglês é sinal de que o modelo se perdeu.
+    if lingua(v.get("erroComum") or "") == "en":
+        v.pop("erroComum", None)
+    v["conceito"] = (v.get("conceito") or "").strip()
+    if v["conceito"][:1].islower():
+        v["conceito"] = v["conceito"][:1].upper() + v["conceito"][1:]
+    if len(v["conceito"]) < 15:
+        raise ValueError("conceito curto demais")
     if not v.get("sentidos"):
         raise ValueError("sem sentidos")
+    if not any(x.get("exemplo") for x in v["sentidos"]):
+        raise ValueError("nenhum sentido com exemplo que use a palavra")
     return v
 
 
