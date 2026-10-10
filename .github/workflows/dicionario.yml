@@ -132,16 +132,16 @@ jobs:
         uses: actions/cache@v4
         with:
           path: modelo.gguf
-          key: qwen2.5-7b-instruct-q4km-v1
+          key: qwen2.5-14b-instruct-q4km-v1
 
       - name: Baixar o modelo
         if: steps.fila.outputs.trabalho == 'sim' && steps.cache-modelo.outputs.cache-hit != 'true'
-        run: curl -sSL --retry 3 -o modelo.gguf "https://huggingface.co/bartowski/Qwen2.5-7B-Instruct-GGUF/resolve/main/Qwen2.5-7B-Instruct-Q4_K_M.gguf" && ls -lh modelo.gguf
+        run: curl -sSL --retry 3 -o modelo.gguf "https://huggingface.co/bartowski/Qwen2.5-14B-Instruct-GGUF/resolve/main/Qwen2.5-14B-Instruct-Q4_K_M.gguf" && ls -lh modelo.gguf
 
       - name: Escrever os verbetes
         if: steps.fila.outputs.trabalho == 'sim'
         run: |
-          pip install -q requests==2.32.3
+          pip install -q requests==2.32.3 wordfreq==3.1.1
           ./llama-bin/llama-server -m modelo.gguf -c 4096 -t $(nproc) --port 8080 > servidor.log 2>&1 &
           for i in $(seq 1 150); do curl -s localhost:8080/health | grep -q ok && break; sleep 2; done
           python robo/dicionario.py ${{ needs.plano.outputs.modo }}

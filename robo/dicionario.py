@@ -342,17 +342,18 @@ Regras (verbete CURTO e direto, foco no mundo das empresas):
 - Exemplos e frases em inglês do ambiente de trabalho (reunião, e-mail, cliente, projeto, prazo, equipe), naturais e atuais, com tradução. Se a palavra quase não aparece no trabalho, use um exemplo do dia a dia de um adulto.
 - Escreva com as suas palavras. Nunca copie definições de dicionários publicados.
 - conceito: 1 ou 2 frases curtas.
-- traducoes: as mais usadas, da mais comum para a menos comum.
-- sentidos: só os mais importantes (até 3), definição curta + 1 exemplo.
+- traducoes: SÓ palavras em PORTUGUÊS, as mais usadas, da mais comum para a menos comum. Nunca repita a palavra em inglês.
+- sentidos: só os sentidos reais e importantes (até 3), guiados pelos sentidos da base; nunca invente sentido. Definição curta + 1 exemplo.
+- Todo exemplo em inglês tem que ser gramaticalmente correto e usar a entrada exatamente no sentido descrito. A tradução fica só no campo de tradução, nunca entre parênteses no exemplo.
 - collocations: as combinações mais frequentes no trabalho, com tradução.
-- padroes: estruturas de uso em notação de professor (ex.: "suggest + -ing"), com exemplo.
+- padroes: estruturas de uso desta palavra em notação de professor (verbo + -ing, adjetivo + preposição etc.), com exemplo. Só padrões que usam a própria entrada.
 - frases: frases prontas úteis no trabalho.
-- alternativas: palavras parecidas e a diferença em uma frase. Vazio se não houver.
+- alternativas: palavras em INGLÊS parecidas com a entrada, e a diferença em uma frase em português. Vazio se não houver.
 - phrasalVerbs e idioms: só os reais e usados hoje, de preferência no trabalho. Vazio se não houver.
 - erroComum: o erro típico de brasileiros (falso cognato, preposição, tradução literal, pronúncia), em uma frase. Vazio se não houver.
 - areas: só se for termo de uma área profissional; senão vazio.
 - nivel: o nível CEFR em que se aprende a palavra.
-- intencoes: o que a pessoa quer dizer ao usar a palavra, em português, bem curto (ex.: "cobrar um prazo", "pedir desculpas").
+- intencoes: o que a pessoa quer dizer ao usar a palavra, em português, bem curto (um verbo no infinitivo + complemento).
 - relacionados: palavras do mesmo campo, em inglês."""
 
 
@@ -378,7 +379,46 @@ def pedir_verbete(lema, tipo, base, contexto=None):
     r.raise_for_status()
     texto = r.json()["choices"][0]["message"]["content"]
     v = json.loads(texto)
-    return arrumar(v)
+    return conferir(lema, arrumar(v))
+
+
+EXEMPLOS_DO_ENUNCIADO = {"suggest + -ing", "be good at + noun", "cobrar um prazo", "pedir desculpas"}
+
+
+def lingua(texto):
+    """'en', 'pt' ou None, pela frequência das palavras em cada língua (wordfreq)."""
+    try:
+        from wordfreq import zipf_frequency
+    except ImportError:
+        return None
+    palavras = re.findall(r"[a-zà-ÿ']+", texto.lower())
+    if not palavras:
+        return None
+    en = sum(zipf_frequency(w, "en") for w in palavras) / len(palavras)
+    pt = sum(zipf_frequency(w, "pt") for w in palavras) / len(palavras)
+    if abs(en - pt) < 0.8:
+        return None
+    return "en" if en > pt else "pt"
+
+
+def conferir(lema, v):
+    """Conferência automática antes de gravar (piloto de 09/10/2026). Devolve o verbete limpo ou levanta erro."""
+    minus = lema.lower().strip()
+    v["traducoes"] = [t for t in v.get("traducoes") or [] if t.strip() and t.strip().lower() != minus and lingua(t) != "en"]
+    if not v["traducoes"]:
+        raise ValueError("sem tradução em português")
+    v["alternativas"] = [a for a in v.get("alternativas") or [] if a.get("palavra", "").strip().lower() != minus and lingua(a.get("palavra", "")) != "pt"]
+    v["padroes"] = [p for p in v.get("padroes") or [] if p.get("padrao", "").strip().lower() not in EXEMPLOS_DO_ENUNCIADO]
+    v["intencoes"] = [i for i in v.get("intencoes") or [] if i.strip().lower() not in EXEMPLOS_DO_ENUNCIADO]
+    v["relacionados"] = [r for r in v.get("relacionados") or [] if r.strip().lower() != minus and lingua(r) != "pt"]
+    for chave in ("sentidos", "padroes"):
+        for x in v.get(chave) or []:
+            ex = x.get("exemplo") or ""
+            # Tradução entre parênteses dentro do exemplo em inglês: tira.
+            x["exemplo"] = re.sub(r"\s*\([^)]*\)\s*$", "", ex).strip() or ex
+    if not v.get("sentidos"):
+        raise ValueError("sem sentidos")
+    return v
 
 
 def arrumar(v):
@@ -427,6 +467,9 @@ def base_da_palavra(termo):
 
 
 def fazer_enriquecer(maquina, so_sugestoes=False):
+    if str(maquina) == "1":
+        teste = {w: lingua(w) for w in ("agora", "currently", "do que", "meeting", "reunião", "at the moment", "neste momento")}
+        aviso("Conferência de língua", json.dumps(teste, ensure_ascii=False))
     feitos = erros = sugestoes = 0
     tempos = []
     # Piloto: TETO verbetes no total da rodada, divididos entre as máquinas.
