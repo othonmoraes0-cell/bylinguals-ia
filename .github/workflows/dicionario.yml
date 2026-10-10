@@ -4,9 +4,8 @@ name: Dicionário Bylinguals
 #  - base: lê o Wiktionary extraído (kaikki.org) e manda ao Portal as palavras mais usadas, phrasal verbs e idioms.
 #  - enriquecer: várias máquinas escrevem os verbetes no estilo Bylinguals com um modelo aberto (llama.cpp).
 #  - sugestoes: prepara só as palavras que alunos e professores sugeriram (o Portal chama na hora).
+# Agendamento desligado (09/10/2026): o usuário quer um piloto de 300 verbetes antes de fazer todos.
 on:
-  schedule:
-    - cron: "23 */6 * * *"
   workflow_dispatch:
     inputs:
       modo:
@@ -18,6 +17,9 @@ on:
       palavras:
         description: "Quantas palavras simples na base (as expressões vêm além disso)"
         default: "25000"
+      teto:
+        description: "Quantos verbetes escrever no total nesta rodada (0 = sem limite)"
+        default: "0"
 
 permissions:
   id-token: write # token OIDC: é assim que o Portal sabe que é este robô (sem senha)
@@ -74,6 +76,8 @@ jobs:
     env:
       SITE_URL: ${{ vars.SITE_URL || 'https://www.bylinguals.com.br' }}
       MAQUINA: ${{ matrix.maquina }}
+      TETO: ${{ inputs.teto || '0' }}
+      MAQUINAS: ${{ inputs.maquinas || '10' }}
       LIMITE_HORAS: ${{ needs.plano.outputs.modo == 'sugestoes' && '1' || '5.2' }}
     steps:
       - uses: actions/checkout@v4

@@ -419,8 +419,16 @@ def base_da_palavra(termo):
 def fazer_enriquecer(maquina, so_sugestoes=False):
     feitos = erros = sugestoes = 0
     tempos = []
+    # Piloto: TETO verbetes no total da rodada, divididos entre as máquinas.
+    teto_total = int(os.environ.get("TETO", "0") or 0)
+    maquinas = max(1, int(os.environ.get("MAQUINAS", "1") or 1))
+    teto = -(-teto_total // maquinas) if teto_total > 0 else 0
     while time.time() - INICIO < LIMITE_DE_TEMPO:
-        r = portal("POST", "/api/robo/dicionario/lote", {"quantos": 0 if so_sugestoes else 4, "minutos": 90})
+        falta = teto - feitos if teto else 4
+        if teto and falta <= 0:
+            print(f"Chegou ao teto desta máquina ({teto}).", flush=True)
+            break
+        r = portal("POST", "/api/robo/dicionario/lote", {"quantos": 0 if so_sugestoes else min(4, falta), "minutos": 90})
         if r.status_code != 200:
             aviso("Lote: erro", f"HTTP {r.status_code} {r.text[:300]}")
             break
