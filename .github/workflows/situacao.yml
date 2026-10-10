@@ -48,7 +48,7 @@ jobs:
           print("::notice title=Tradução::" + enc(f"{feitos} de {tot} capítulos traduzidos\n" + "\n".join(f"{t['titulo']}: {t['traduzidos']}/{t['capitulos']}" for t in s["traducao"])))
           print("::notice title=Banco::" + enc(f"{s.get('bancoMb')} MB · limites: {s.get('limitesDoBanco')}"))
           d = s.get("dicionario") or {}
-          print("::notice title=Dicionário::" + enc(f"publicados {d.get('publicados')} · por estado {d.get('porEstado')} · por tipo {d.get('porTipo')} · sugestões {d.get('sugestoes')} · banco {s.get('bancoMb')} MB"))
+          print("::notice title=Dicionário::" + enc(f"publicados {d.get('publicados')} · por estado {d.get('porEstado')} · base traduzida (basePt) {d.get('comBasePt')} · por tipo {d.get('porTipo')} · sugestões {d.get('sugestoes')} · banco {s.get('bancoMb')} MB"))
           for a in (s.get("amostraDoDicionario") or [])[:3]:
               print("::notice title=Amostra " + a["lema"] + "::" + enc(json.dumps(a.get("verbete"), ensure_ascii=False)[:3800]))
           print("::notice title=Fila::" + enc("\n".join(f"{f['tipo']} {f['estado']}: {f['quantas']}" for f in s["fila"]) or "vazia"))
