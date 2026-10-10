@@ -344,15 +344,16 @@ Regras (verbete CURTO e direto, foco no mundo das empresas):
 - conceito: 1 ou 2 frases curtas, começando com letra maiúscula, que digam o que a palavra significa de verdade (não "marcador sintático").
 - traducoes: SÓ palavras em PORTUGUÊS, as mais usadas, da mais comum para a menos comum. Nunca repita a palavra em inglês.
 - sentidos: só os sentidos reais e importantes (até 3), guiados pelos sentidos da base; nunca invente sentido. Definição curta + 1 exemplo.
-- TODO exemplo, frase e collocation tem que CONTER a palavra da entrada (ou uma forma dela), ser gramaticalmente correto e usá-la no sentido descrito. Nunca dê um exemplo com outra palavra no lugar. A tradução fica só no campo de tradução, nunca entre parênteses no exemplo.
+- TODO exemplo, frase e collocation tem que CONTER a palavra da entrada (ou uma forma dela), ser gramaticalmente correto e usá-la no sentido descrito. Nunca dê um exemplo com outra palavra no lugar (não confunda a entrada com uma palavra parecida: "time" não é "team"). O campo em inglês tem SÓ inglês: a tradução vai no campo de tradução, nunca entre parênteses nem como segunda frase.
 - collocations: as combinações mais frequentes no trabalho, com tradução.
 - padroes: estruturas de uso desta palavra em notação de professor (verbo + -ing, adjetivo + preposição etc.), com exemplo. Só padrões que usam a própria entrada.
 - frases: frases prontas úteis no trabalho.
 - alternativas: palavras em INGLÊS parecidas com a entrada, e a diferença em uma frase em português. Vazio se não houver.
 - phrasalVerbs e idioms: só os reais e usados hoje, de preferência no trabalho. Vazio se não houver.
-- erroComum: EM PORTUGUÊS, o erro típico de brasileiros com esta palavra (falso cognato, preposição errada, tradução literal, pronúncia), em uma frase, com o certo e o errado. Vazio se não houver um erro típico.
+- erroComum: EM PORTUGUÊS, o erro típico de brasileiros com esta palavra (falso cognato, preposição errada, tradução literal, pronúncia), em UMA frase curta terminada em ponto, com o certo e o errado. Se não couber numa frase curta, deixe vazio. Vazio também se não houver um erro típico.
 - areas: só se for termo de uma área profissional; senão vazio.
 - nivel: o nível CEFR em que se aprende a palavra.
+- registro: "neutro" para as palavras e expressões comuns do dia a dia (a maioria). "formal", "informal" ou "gíria" só quando a palavra for marcada assim no uso real; "técnico" só para termo de área.
 - intencoes: o que a pessoa quer dizer ao usar a palavra, em português, bem curto (um verbo no infinitivo + complemento).
 - relacionados: palavras soltas do mesmo campo, em inglês (não repita as collocations)."""
 
@@ -379,7 +380,7 @@ def pedir_verbete(lema, tipo, base, contexto=None):
     r.raise_for_status()
     texto = r.json()["choices"][0]["message"]["content"]
     v = json.loads(texto)
-    return conferir(lema, arrumar(v), (b.get("formas") or []))
+    return conferir(lema, arrumar(v), (b.get("formas") or []), b)
 
 
 EXEMPLOS_DO_ENUNCIADO = {"suggest + -ing", "be good at + noun", "cobrar um prazo", "pedir desculpas"}
@@ -401,6 +402,60 @@ def lingua(texto):
     return "en" if en > pt else "pt"
 
 
+# Palavras que só existem em português: servem para achar tradução colada no campo em inglês (3ª rodada, 09/10/2026).
+MARCAS_PT = {
+    "nós", "nos", "não", "uma", "para", "este", "esta", "isso", "com", "muito", "equipe", "tempo", "você", "nosso", "nossa",
+    "seu", "sua", "já", "são", "foi", "ser", "está", "estão", "estamos", "neste", "nesta", "mais", "que", "por", "como",
+    "precisamos", "vamos", "aproveitar", "bem", "trabalho", "projeto", "prazo", "reunião", "cliente", "empresa", "ele", "ela",
+    "do", "da", "dos", "das", "em", "os", "as", "um", "ao", "à", "às", "pelo", "pela", "ficando", "sem",
+}
+
+
+def parece_pt(frase):
+    """A frase é em português? (marcas que não existem em inglês, ou a conta do wordfreq)"""
+    palavras = set(re.findall(r"[a-zà-ÿ']+", (frase or "").lower()))
+    if len(palavras & MARCAS_PT) >= 2:
+        return True
+    return lingua(frase or "") == "pt"
+
+
+def so_ingles(frase):
+    """Tira a tradução colada no campo em inglês: entre parênteses no fim, ou como frase solta depois do ponto.
+
+    O 14B escreveu "We need to save time on this project. Precisamos ganhar tempo neste projeto." e
+    "We need to bring the project up to date. (Nós precisamos atualizar o projeto.)".
+    """
+    texto = (frase or "").strip()
+    if not texto:
+        return texto
+    # Parênteses no fim com a tradução dentro.
+    m = re.search(r"\s*\(([^)]*)\)\s*$", texto)
+    if m and parece_pt(m.group(1)):
+        texto = texto[: m.start()].strip() or texto
+    partes = [p for p in re.split(r"(?<=[.!?])\s+", texto) if p.strip()]
+    if len(partes) > 1:
+        fica = []
+        for p in partes:
+            if fica and parece_pt(p):
+                break
+            fica.append(p)
+        if fica:
+            texto = " ".join(fica).strip()
+    return texto
+
+
+def frase_inteira(texto, minimo=25):
+    """A explicação veio inteira? (o 14B cortou o erro comum de 'been' no meio da frase)"""
+    t = (texto or "").strip()
+    return len(t) >= minimo and t[-1] in ".!?"
+
+
+def aterrado(definicao, chaves):
+    """O sentido fala do mesmo campo do verbete? (o 14B inventou 'equipe de trabalho' no verbete de 'time')"""
+    raizes = {w[:4] for w in re.findall(r"[a-zà-ÿ']{4,}", (definicao or "").lower())}
+    return bool(raizes & chaves)
+
+
 def usa_a_entrada(frase, lema, formas=()):
     """A frase usa mesmo a palavra do verbete? (aceita plural, -s, -ed, -ing, contração e maiúscula)"""
     texto = " " + re.sub(r"[^a-zà-ÿ'\- ]+", " ", (frase or "").lower()) + " "
@@ -416,7 +471,7 @@ def usa_a_entrada(frase, lema, formas=()):
     return False
 
 
-def conferir(lema, v, formas=()):
+def conferir(lema, v, formas=(), base=None):
     """Conferência automática antes de gravar (piloto de 09/10/2026). Devolve o verbete limpo ou levanta erro."""
     minus = lema.lower().strip()
     v["traducoes"] = [t for t in v.get("traducoes") or [] if t.strip() and t.strip().lower() != minus and lingua(t) != "en"]
@@ -426,11 +481,14 @@ def conferir(lema, v, formas=()):
     v["padroes"] = [p for p in v.get("padroes") or [] if p.get("padrao", "").strip().lower() not in EXEMPLOS_DO_ENUNCIADO]
     v["intencoes"] = [i for i in v.get("intencoes") or [] if i.strip().lower() not in EXEMPLOS_DO_ENUNCIADO]
     v["relacionados"] = [r for r in v.get("relacionados") or [] if r.strip().lower() != minus and lingua(r) != "pt"]
+    # Tradução colada no campo em inglês (entre parênteses ou como frase depois do ponto): tira.
     for chave in ("sentidos", "padroes"):
         for x in v.get(chave) or []:
-            ex = x.get("exemplo") or ""
-            # Tradução entre parênteses dentro do exemplo em inglês: tira.
-            x["exemplo"] = re.sub(r"\s*\([^)]*\)\s*$", "", ex).strip() or ex
+            if x.get("exemplo"):
+                x["exemplo"] = so_ingles(x["exemplo"]) or x["exemplo"]
+    for fr in v.get("frases") or []:
+        if fr.get("en"):
+            fr["en"] = so_ingles(fr["en"]) or fr["en"]
     # O exemplo tem que USAR a palavra do verbete (o 14B escreveu "She comes from Brazil." no verbete de "of").
     for x in v.get("sentidos") or []:
         if x.get("exemplo") and not usa_a_entrada(x["exemplo"], lema, formas):
@@ -440,8 +498,27 @@ def conferir(lema, v, formas=()):
     v["frases"] = [f for f in v.get("frases") or [] if usa_a_entrada(f.get("en", ""), lema, formas)]
     v["collocations"] = [c for c in v.get("collocations") or [] if usa_a_entrada(c.get("expressao", ""), lema, formas)]
     # As explicações são em português; o erro comum em inglês é sinal de que o modelo se perdeu.
-    if lingua(v.get("erroComum") or "") == "en":
+    # E ele tem que vir inteiro: o 14B corta no meio da frase quando chega ao limite de letras.
+    if lingua(v.get("erroComum") or "") == "en" or not frase_inteira(v.get("erroComum") or ""):
         v.pop("erroComum", None)
+    # Sentido sem exemplo não vai para o Portal (o esquema pede exemplo), desde que sobre um.
+    comExemplo = [x for x in v.get("sentidos") or [] if x.get("exemplo")]
+    if comExemplo:
+        v["sentidos"] = comExemplo
+    # Sentido inventado: o 14B deu "equipe de trabalho" como sentido de "time". O 1º sentido fica; os outros
+    # precisam falar do mesmo campo do verbete (traduções, conceito, traduções da base).
+    chaves = {w[:4] for w in re.findall(r"[a-zà-ÿ']{4,}", " ".join(v["traducoes"] + [v.get("conceito") or ""] + ((base or {}).get("traducoes") or [])).lower())}
+    if chaves and len(v.get("sentidos") or []) > 1:
+        v["sentidos"] = v["sentidos"][:1] + [x for x in v["sentidos"][1:] if aterrado(x.get("definicao"), chaves) or aterrado(x.get("exemploPt"), chaves)]
+    # Registro: palavra comum do dia a dia é neutra. O 14B chamou "been" de formal e "time" de informal.
+    if v.get("registro") in ("formal", "informal", "gíria") and (base or {}).get("tipo", "PALAVRA") == "PALAVRA":
+        try:
+            from wordfreq import zipf_frequency
+
+            if zipf_frequency(minus, "en") >= 4.0:
+                v["registro"] = "neutro"
+        except ImportError:
+            pass
     v["conceito"] = (v.get("conceito") or "").strip()
     if v["conceito"][:1].islower():
         v["conceito"] = v["conceito"][:1].upper() + v["conceito"][1:]
