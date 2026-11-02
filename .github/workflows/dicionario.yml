@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       modo:
-        description: "base | enriquecer | sugestoes | traduzir (sentidos da base para o português) | refazer"
+        description: "base | enriquecer | sugestoes | traduzir (sentidos da base para o português) | refazer | teste (100 palavras, fontes abertas, não escreve no Portal)"
         default: "enriquecer"
       maquinas:
         description: "Quantas máquinas escrevem ao mesmo tempo (enriquecer)"
@@ -63,7 +63,7 @@ jobs:
 
   escrever:
     needs: plano
-    if: needs.plano.outputs.modo == 'enriquecer' || needs.plano.outputs.modo == 'sugestoes'
+    if: needs.plano.outputs.modo == 'enriquecer' || needs.plano.outputs.modo == 'sugestoes' || needs.plano.outputs.modo == 'teste'
     runs-on: ubuntu-latest
     timeout-minutes: 355
     strategy:
@@ -141,10 +141,18 @@ jobs:
       - name: Escrever os verbetes
         if: steps.fila.outputs.trabalho == 'sim'
         run: |
-          pip install -q requests==2.32.3 wordfreq==3.1.1
+          pip install -q requests==2.32.3 wordfreq==3.1.1 nltk==3.9.1
           ./llama-bin/llama-server -m modelo.gguf -c 4096 -t $(nproc) --port 8080 > servidor.log 2>&1 &
           for i in $(seq 1 150); do curl -s localhost:8080/health | grep -q ok && break; sleep 2; done
           python robo/dicionario.py ${{ needs.plano.outputs.modo }}
+
+      - name: Guardar o resultado do teste
+        if: always() && needs.plano.outputs.modo == 'teste'
+        uses: actions/upload-artifact@v4
+        with:
+          name: teste-${{ matrix.maquina }}
+          path: teste-*.jsonl
+          if-no-files-found: ignore
 
       - name: Registro do servidor
         if: failure()
