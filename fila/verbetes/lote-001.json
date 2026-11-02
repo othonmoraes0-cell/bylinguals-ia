@@ -1,0 +1,311 @@
+[
+ {
+  "id": "cmv1lrqae04ajl306uqhfcwfv",
+  "verbete": {
+   "conceito": "Peça musical cantada, com letra e melodia; também o canto de um pássaro.",
+   "traducoes": [
+    "canção",
+    "música",
+    "cantiga"
+   ],
+   "nivel": "A1",
+   "registro": "neutro",
+   "areas": [],
+   "sentidos": [
+    {
+     "classe": "noun",
+     "definicao": "Composição musical com letra, feita para ser cantada.",
+     "exemplo": "Our team sang a song at the company party.",
+     "exemploPt": "Nossa equipe cantou uma canção na festa da empresa."
+    },
+    {
+     "classe": "noun",
+     "definicao": "O canto de um pássaro ou de outro animal.",
+     "exemplo": "I woke up to the song of the birds outside my hotel.",
+     "exemploPt": "Acordei com o canto dos pássaros do lado de fora do hotel."
+    }
+   ],
+   "collocations": [
+    {
+     "expressao": "favorite song",
+     "traducao": "música favorita"
+    },
+    {
+     "expressao": "sing a song",
+     "traducao": "cantar uma música"
+    },
+    {
+     "expressao": "folk song",
+     "traducao": "canção folclórica"
+    },
+    {
+     "expressao": "song lyrics",
+     "traducao": "letra de música"
+    }
+   ],
+   "padroes": [
+    {
+     "padrao": "song about + noun",
+     "exemplo": "It is a song about friendship.",
+     "traducao": "É uma música sobre amizade."
+    }
+   ],
+   "frases": [
+    {
+     "en": "What is your favorite song?",
+     "pt": "Qual é a sua música favorita?"
+    },
+    {
+     "en": "That song is stuck in my head.",
+     "pt": "Essa música não sai da minha cabeça."
+    },
+    {
+     "en": "Can you play that song again?",
+     "pt": "Pode tocar essa música de novo?"
+    }
+   ],
+   "alternativas": [
+    {
+     "palavra": "music",
+     "diferenca": "Music é a música em geral e não tem plural; song é uma música específica, com letra."
+    }
+   ],
+   "relacionados": [
+    "lyrics",
+    "singer",
+    "album",
+    "melody",
+    "playlist"
+   ],
+   "phrasalVerbs": [],
+   "idioms": [
+    {
+     "expressao": "for a song",
+     "significado": "Por um preço muito baixo."
+    },
+    {
+     "expressao": "sing a different song",
+     "significado": "Mudar de opinião ou de discurso."
+    }
+   ],
+   "erroComum": "Não diga 'a music' para uma faixa só: use 'a song'; 'music' não tem plural nem artigo.",
+   "intencoes": [
+    "pedir uma música",
+    "falar do seu gosto musical"
+   ]
+  }
+ },
+ {
+  "id": "cmv1lrqb004bjl306apjml960",
+  "verbete": {
+   "conceito": "Indica movimento de um lado ao outro de algo, ou algo situado no lado oposto.",
+   "traducoes": [
+    "através de",
+    "do outro lado de",
+    "por"
+   ],
+   "nivel": "A2",
+   "registro": "neutro",
+   "areas": [],
+   "sentidos": [
+    {
+     "classe": "preposition",
+     "definicao": "De um lado ao outro de algo, atravessando.",
+     "exemplo": "We walked across the bridge to the office.",
+     "exemploPt": "Atravessamos a ponte a pé até o escritório."
+    },
+    {
+     "classe": "preposition",
+     "definicao": "No lado oposto de uma rua, rio ou sala.",
+     "exemplo": "The bank is across the street from our building.",
+     "exemploPt": "O banco fica do outro lado da rua, em frente ao nosso prédio."
+    },
+    {
+     "classe": "adverb",
+     "definicao": "De um lado ao outro, sem objeto depois.",
+     "exemplo": "The river is wide, but we can swim across.",
+     "exemploPt": "O rio é largo, mas conseguimos atravessar a nado."
+    }
+   ],
+   "collocations": [
+    {
+     "expressao": "across the street",
+     "traducao": "do outro lado da rua"
+    },
+    {
+     "expressao": "across the country",
+     "traducao": "pelo país inteiro"
+    },
+    {
+     "expressao": "across the table",
+     "traducao": "do outro lado da mesa"
+    },
+    {
+     "expressao": "across departments",
+     "traducao": "entre departamentos"
+    }
+   ],
+   "padroes": [
+    {
+     "padrao": "across + lugar",
+     "exemplo": "Our clients are across Brazil.",
+     "traducao": "Nossos clientes estão por todo o Brasil."
+    }
+   ],
+   "frases": [
+    {
+     "en": "Our new office is across the street.",
+     "pt": "Nosso novo escritório fica do outro lado da rua."
+    },
+    {
+     "en": "We have teams across three countries.",
+     "pt": "Temos equipes em três países."
+    },
+    {
+     "en": "Please walk across the room and open the window.",
+     "pt": "Por favor, atravesse a sala e abra a janela."
+    }
+   ],
+   "alternativas": [
+    {
+     "palavra": "through",
+     "diferenca": "Through é passar por dentro de algo (túnel, porta); across é atravessar a superfície, de lado a lado."
+    },
+    {
+     "palavra": "over",
+     "diferenca": "Over é por cima de algo; across enfatiza ir de um lado até o outro."
+    }
+   ],
+   "relacionados": [
+    "opposite",
+    "beyond",
+    "along",
+    "around"
+   ],
+   "phrasalVerbs": [
+    {
+     "expressao": "come across",
+     "significado": "Encontrar algo ou alguém por acaso."
+    },
+    {
+     "expressao": "get across",
+     "significado": "Fazer uma ideia ser entendida."
+    }
+   ],
+   "idioms": [],
+   "erroComum": "Brasileiros dizem 'in front of the street' para 'em frente'; o certo é 'across the street'.",
+   "intencoes": [
+    "dar uma direção",
+    "explicar onde algo fica"
+   ]
+  }
+ },
+ {
+  "id": "cmv1lrqb904brl306qy0qj7we",
+  "verbete": {
+   "conceito": "Algo que se faz para conseguir um resultado; também o movimento de um filme ou de um jogo.",
+   "traducoes": [
+    "ação",
+    "medida",
+    "atitude"
+   ],
+   "nivel": "A2",
+   "registro": "neutro",
+   "areas": [
+    "Negócios"
+   ],
+   "sentidos": [
+    {
+     "classe": "noun",
+     "definicao": "Algo que alguém faz, principalmente para resolver um problema.",
+     "exemplo": "We need to take action before the deadline.",
+     "exemploPt": "Precisamos tomar uma atitude antes do prazo."
+    },
+    {
+     "classe": "noun",
+     "definicao": "Ação definida numa reunião: um passo que alguém precisa cumprir.",
+     "exemplo": "The action from the meeting is to send the report.",
+     "exemploPt": "A tarefa definida na reunião é enviar o relatório."
+    },
+    {
+     "classe": "noun",
+     "definicao": "Movimento e emoção de um filme ou de um jogo.",
+     "exemplo": "The movie has a lot of action.",
+     "exemploPt": "O filme tem muita ação."
+    }
+   ],
+   "collocations": [
+    {
+     "expressao": "take action",
+     "traducao": "tomar uma atitude"
+    },
+    {
+     "expressao": "action plan",
+     "traducao": "plano de ação"
+    },
+    {
+     "expressao": "action item",
+     "traducao": "tarefa a fazer"
+    },
+    {
+     "expressao": "course of action",
+     "traducao": "linha de ação"
+    },
+    {
+     "expressao": "immediate action",
+     "traducao": "ação imediata"
+    }
+   ],
+   "padroes": [
+    {
+     "padrao": "take action on + noun",
+     "exemplo": "We must take action on this complaint.",
+     "traducao": "Precisamos agir sobre esta reclamação."
+    }
+   ],
+   "frases": [
+    {
+     "en": "What is our next action?",
+     "pt": "Qual é a nossa próxima ação?"
+    },
+    {
+     "en": "Let's write an action plan after the meeting.",
+     "pt": "Vamos escrever um plano de ação depois da reunião."
+    },
+    {
+     "en": "The manager took quick action.",
+     "pt": "O gerente agiu rápido."
+    }
+   ],
+   "alternativas": [
+    {
+     "palavra": "activity",
+     "diferenca": "Activity é algo que se faz com frequência (atividade); action é um ato ou passo específico."
+    }
+   ],
+   "relacionados": [
+    "decision",
+    "task",
+    "step",
+    "result",
+    "plan"
+   ],
+   "phrasalVerbs": [],
+   "idioms": [
+    {
+     "expressao": "actions speak louder than words",
+     "significado": "O que se faz vale mais do que o que se diz."
+    },
+    {
+     "expressao": "a piece of the action",
+     "significado": "Uma parte dos lucros ou do que está acontecendo."
+    }
+   ],
+   "erroComum": "Não diga 'make an action'; o certo é 'take action' (tomar uma atitude).",
+   "intencoes": [
+    "propor um próximo passo",
+    "cobrar uma atitude da equipe"
+   ]
+  }
+ }
+]
