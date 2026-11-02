@@ -747,7 +747,7 @@ def fazer_exportar():
     minutos = int(os.environ.get("MINUTOS", "360") or 360)
     verbetes, sugestoes, vistos = [], [], set()
     while len(verbetes) < teto:
-        r = portal("POST", "/api/robo/dicionario/lote", {"quantos": min(50, teto - len(verbetes)), "minutos": min(360, max(5, minutos))})
+        r = portal("POST", "/api/robo/dicionario/lote", {"quantos": min(50, teto - len(verbetes)), "minutos": min(360, max(5, minutos)), "maxTentativas": 99})
         if r.status_code != 200:
             aviso("Exportar: erro", f"HTTP {r.status_code} {r.text[:300]}")
             if not verbetes:
