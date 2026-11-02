@@ -86,6 +86,14 @@ def main():
         enviados.clear()
         r = d.fazer_importar()
         assert [c[1]["id"] for c in enviados] == ["solto1"], enviados  # ok1 já importado; liberação repete (inofensivo)
+    # O despacho de modos: `exportar`/`importar` NÃO podem cair no enriquecer (bug do primeiro run, 02/11/2026).
+    import subprocess
+
+    caminho = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dicionario.py")
+    env = {k: v for k, v in os.environ.items() if not k.startswith("ACTIONS_")}
+    env["LLM_URL"] = "http://127.0.0.1:9/nada"
+    r = subprocess.run([sys.executable, caminho, "exportar"], env=env, capture_output=True, text=True, timeout=60)
+    assert "ACTIONS_ID_TOKEN_REQUEST_URL" in r.stderr and "falhou" not in r.stdout, (r.stdout, r.stderr)  # chegou em fazer_exportar (pede token), não no LLM
     print("OK: importador confere, recusa com motivo exato, ensaio não posta, importados não repetem.")
 
 

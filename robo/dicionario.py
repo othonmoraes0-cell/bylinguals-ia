@@ -1003,6 +1003,12 @@ if __name__ == "__main__":
     if modo == "traduzir":
         fazer_traducao_da_base(os.environ.get("MAQUINA", "1"), os.environ.get("MAQUINAS", "1"))
         sys.exit(0)
+    if modo == "exportar":
+        fazer_exportar()
+        sys.exit(0)
+    if modo == "importar":
+        fazer_importar()
+        sys.exit(0)
     if modo == "base":
         fazer_base(int(os.environ.get("LIMITE_PALAVRAS", "25000")))
     elif modo == "sugestoes":
