@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       modo:
-        description: "base | enriquecer | sugestoes | traduzir (sentidos da base para o português) | refazer"
+        description: "base | enriquecer | sugestoes | traduzir (sentidos da base para o português) | refazer | exportar (reserva TETO lemas e grava fila/pendentes.json, Claude escreve) | importar (confere fila/verbetes/*.json e manda ao Portal; so_conferir=1 só confere)"
         default: "enriquecer"
       maquinas:
         description: "Quantas máquinas escrevem ao mesmo tempo (enriquecer)"
@@ -18,8 +18,14 @@ on:
         description: "Quantas palavras simples na base (as expressões vêm além disso)"
         default: "25000"
       teto:
-        description: "Quantos verbetes escrever no total nesta rodada (0 = sem limite)"
+        description: "Quantos verbetes escrever no total nesta rodada (0 = sem limite). No modo exportar: quantos lemas reservar (0 = 300)"
         default: "0"
+      so_conferir:
+        description: "Só no modo importar: 1 = ensaio, confere e grava fila/rejeitados.json mas não manda nada ao Portal"
+        default: "0"
+      minutos:
+        description: "Só no modo exportar: por quantos minutos a reserva vale (máximo 360). Depois disso o Portal devolve os lemas à fila"
+        default: "360"
 
 permissions:
   id-token: write # token OIDC: é assim que o Portal sabe que é este robô (sem senha)
@@ -37,7 +43,7 @@ jobs:
           MODO="${{ inputs.modo || 'enriquecer' }}"
           N="${{ inputs.maquinas || '10' }}"
           if [ "$MODO" = "sugestoes" ]; then N=1; fi
-          if [ "$MODO" = "base" ] || [ "$MODO" = "refazer" ]; then N=1; fi
+          if [ "$MODO" = "base" ] || [ "$MODO" = "refazer" ] || [ "$MODO" = "exportar" ] || [ "$MODO" = "importar" ]; then N=1; fi
           echo "modo=$MODO" >> "$GITHUB_OUTPUT"
           echo "maquinas=$(python3 -c "import json;print(json.dumps(list(range(1, min(int('$N'), 16) + 1))))")" >> "$GITHUB_OUTPUT"
 
@@ -60,6 +66,52 @@ jobs:
       - run: pip install -q requests==2.32.3 wordfreq==3.1.1
       - name: Base aberta (ou refazer)
         run: python robo/dicionario.py ${{ needs.plano.outputs.modo }}
+
+  # Claude escreve os verbetes (02/11/2026): trabalho leve, sem modelo nem llama.cpp. Só transporte e conferência automática.
+  fila:
+    needs: plano
+    if: needs.plano.outputs.modo == 'exportar' || needs.plano.outputs.modo == 'importar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      id-token: write # token OIDC para falar com o Portal
+      contents: write # grava fila/pendentes.json, fila/rejeitados.json e fila/importados.json na branch
+    concurrency:
+      group: dicionario-fila
+      cancel-in-progress: false
+    env:
+      SITE_URL: ${{ vars.SITE_URL || 'https://www.bylinguals.com.br' }}
+      TETO: ${{ inputs.teto || '0' }}
+      MINUTOS: ${{ inputs.minutos || '360' }}
+      SO_CONFERIR: ${{ inputs.so_conferir || '0' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -q requests==2.32.3 wordfreq==3.1.1
+      - name: Exportar ou importar
+        run: python robo/dicionario.py ${{ needs.plano.outputs.modo }}
+      - name: Guardar fila/ no repositório (sem force push)
+        if: always()
+        run: |
+          git config user.name "robo-dicionario"
+          git config user.email "robo-dicionario@users.noreply.github.com"
+          for f in fila/pendentes.json fila/rejeitados.json fila/importados.json; do [ -f "$f" ] && git add "$f"; done
+          if git diff --cached --quiet; then echo "Nada novo para guardar."; exit 0; fi
+          git commit -m "dicionário: fila (${{ needs.plano.outputs.modo }}) [skip ci]"
+          for i in 1 2 3; do
+            git pull --rebase origin "${{ github.ref_name }}" && git push origin "HEAD:${{ github.ref_name }}" && exit 0
+            sleep 5
+          done
+          echo "Não consegui enviar o commit" && exit 1
+      - name: Guardar fila/ como artefato
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fila-${{ needs.plano.outputs.modo }}
+          path: fila/
+          if-no-files-found: ignore
 
   escrever:
     needs: plano

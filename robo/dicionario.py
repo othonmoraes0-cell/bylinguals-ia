@@ -710,6 +710,289 @@ def fazer_traducao_da_base(maquina, maquinas):
     aviso(f"Tradução da base · máquina {maquina}", f"{feitos} verbetes traduzidos em {time.time() - t0:.0f} s")
 
 
+# ------------------------------------------------------------------------------------------------ Claude escreve (02/11/2026)
+#
+# O modelo grátis do GitHub escrevia mal. Agora quem escreve os verbetes é o Claude; o robô só faz o transporte e a conferência:
+#   exportar  reserva N lemas no Portal e grava fila/pendentes.json (a reserva dura `minutos`, 360 = 6 h, e depois expira sozinha).
+#   importar  lê fila/verbetes/*.json, passa cada verbete pela MESMA conferir/arrumar do caminho antigo, manda os aceitos ao
+#             Portal e grava fila/rejeitados.json com o motivo exato dos recusados (nada é solto em silêncio).
+#   SO_CONFERIR=1  só confere, não manda nada (ensaio).
+# Guia para quem escreve: fila/COMO_ESCREVER.md.
+
+RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def pasta_fila():
+    return os.environ.get("FILA_DIR") or os.path.join(RAIZ, "fila")
+
+
+def ler_json(caminho, padrao):
+    try:
+        with open(caminho, encoding="utf-8") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return padrao
+
+
+def gravar_json(caminho, dados):
+    os.makedirs(os.path.dirname(caminho), exist_ok=True)
+    with open(caminho, "w", encoding="utf-8") as f:
+        json.dump(dados, f, ensure_ascii=False, indent=2)
+        f.write("\n")
+
+
+def fazer_exportar():
+    """Reserva lemas no Portal (mais usados primeiro) e grava fila/pendentes.json."""
+    teto = int(os.environ.get("TETO", "0") or 0) or 300
+    minutos = int(os.environ.get("MINUTOS", "360") or 360)
+    verbetes, sugestoes, vistos = [], [], set()
+    while len(verbetes) < teto:
+        r = portal("POST", "/api/robo/dicionario/lote", {"quantos": min(50, teto - len(verbetes)), "minutos": min(360, max(5, minutos))})
+        if r.status_code != 200:
+            aviso("Exportar: erro", f"HTTP {r.status_code} {r.text[:300]}")
+            if not verbetes:
+                sys.exit(1)
+            break
+        lote = r.json()
+        for sg in lote.get("sugestoes") or []:
+            if sg["id"] not in vistos:
+                vistos.add(sg["id"])
+                sugestoes.append(sg)
+        novos = [vb for vb in lote.get("verbetes") or [] if vb["id"] not in vistos]
+        if not novos:
+            print("Nada mais na fila.", flush=True)
+            break
+        for vb in novos:
+            vistos.add(vb["id"])
+            verbetes.append({"id": vb["id"], "lema": vb["lema"], "tipo": vb.get("tipo") or "PALAVRA", "base": vb.get("base") or {}})
+        print(f"  reservados {len(verbetes)}/{teto}", flush=True)
+    agora = time.time()
+    gravar_json(os.path.join(pasta_fila(), "pendentes.json"), {
+        "reservadoEm": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(agora)),
+        "expiraEm": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(agora + minutos * 60)),
+        "minutos": minutos,
+        "verbetes": verbetes,
+        "sugestoes": sugestoes,
+    })
+    aviso("Exportar", f"{len(verbetes)} lemas reservados (e {len(sugestoes)} sugestões) por {minutos} min; gravados em fila/pendentes.json")
+
+
+# Espelho em Python do verbeteSchema do Portal (src/lib/dicionario/formato.ts): o que o Portal recusaria com HTTP 422.
+NIVEIS = ["A1", "A2", "B1", "B2", "C1", "C2"]
+REGISTROS = ["formal", "neutro", "informal", "gíria", "técnico"]
+# campo -> (máximo de itens, {subcampo: (tamanho máximo, obrigatório)})
+LISTAS_DO_FORMATO = {
+    "sentidos": (8, {"classe": (30, False), "definicao": (400, True), "exemplo": (300, False), "exemploPt": (300, False)}),
+    "collocations": (16, {"expressao": (80, True), "traducao": (120, False)}),
+    "padroes": (8, {"padrao": (100, True), "exemplo": (300, False), "traducao": (300, False)}),
+    "frases": (10, {"en": (300, True), "pt": (300, True)}),
+    "alternativas": (8, {"palavra": (60, True), "diferenca": (400, True)}),
+    "phrasalVerbs": (12, {"expressao": (60, True), "significado": (200, True)}),
+    "idioms": (10, {"expressao": (100, True), "significado": (250, True)}),
+}
+LISTAS_DE_TEXTO = {"traducoes": (10, 80), "relacionados": (16, 60), "intencoes": (8, 80)}
+CAMPOS_CONHECIDOS = {"conceito", "nivel", "registro", "areas", "erroComum"} | set(LISTAS_DO_FORMATO) | set(LISTAS_DE_TEXTO)
+
+
+def erros_de_formato(v):
+    """Lista de erros de formato (o Portal recusaria). Vazia = formato válido."""
+    if not isinstance(v, dict):
+        return ["o verbete não é um objeto JSON"]
+    e = []
+
+    def texto(valor, maximo, nome, obrigatorio=True):
+        if valor is None or valor == "":
+            if obrigatorio:
+                e.append(f"{nome}: obrigatório")
+            return
+        if not isinstance(valor, str):
+            e.append(f"{nome}: tem que ser texto")
+        elif not valor.strip():
+            e.append(f"{nome}: vazio")
+        elif len(valor.strip()) > maximo:
+            e.append(f"{nome}: {len(valor.strip())} letras (máximo {maximo})")
+
+    texto(v.get("conceito"), 700, "conceito")
+    if v.get("nivel") is not None and v["nivel"] not in NIVEIS:
+        e.append(f"nivel: '{v['nivel']}' (use {'/'.join(NIVEIS)})")
+    if v.get("registro") is not None and v["registro"] not in REGISTROS:
+        e.append(f"registro: '{v['registro']}' (use {'/'.join(REGISTROS)})")
+    areas = v.get("areas") or []
+    if not isinstance(areas, list) or len(areas) > 4 or any(a not in AREAS for a in areas):
+        e.append(f"areas: só valores de {AREAS}, no máximo 4 (recebido {areas})")
+    texto(v.get("erroComum"), 500, "erroComum", False)
+    for chave, (maximo, tam) in LISTAS_DE_TEXTO.items():
+        lista = v.get(chave) or []
+        if not isinstance(lista, list):
+            e.append(f"{chave}: tem que ser lista")
+            continue
+        if len(lista) > maximo:
+            e.append(f"{chave}: {len(lista)} itens (máximo {maximo})")
+        if chave == "traducoes" and not lista:
+            e.append("traducoes: pelo menos 1")
+        for i, x in enumerate(lista):
+            texto(x, tam, f"{chave}[{i}]")
+    for chave, (maximo, campos) in LISTAS_DO_FORMATO.items():
+        lista = v.get(chave) or []
+        if not isinstance(lista, list):
+            e.append(f"{chave}: tem que ser lista")
+            continue
+        if len(lista) > maximo:
+            e.append(f"{chave}: {len(lista)} itens (máximo {maximo})")
+        if chave == "sentidos" and not lista:
+            e.append("sentidos: pelo menos 1")
+        for i, x in enumerate(lista):
+            if not isinstance(x, dict):
+                e.append(f"{chave}[{i}]: tem que ser objeto")
+                continue
+            for campo, (tam, obrig) in campos.items():
+                texto(x.get(campo), tam, f"{chave}[{i}].{campo}", obrig)
+            for extra in set(x) - set(campos):
+                e.append(f"{chave}[{i}].{extra}: campo desconhecido (será ignorado pelo Portal)")
+    for extra in set(v) - CAMPOS_CONHECIDOS:
+        e.append(f"{extra}: campo desconhecido (será ignorado pelo Portal)")
+    return e
+
+
+def o_que_a_conferencia_tirou(antes, depois):
+    """O que conferir() jogou fora em silêncio. Cada item é um motivo legível para quem escreveu reescrever."""
+    m = []
+    if antes.get("erroComum") and not depois.get("erroComum"):
+        m.append(f"erroComum removido (precisa ser UMA frase inteira em português, com mínimo de 25 letras, terminada em . ! ou ?): \"{antes['erroComum']}\"")
+    for t in antes.get("traducoes") or []:
+        if t not in (depois.get("traducoes") or []):
+            m.append(f"traducoes: '{t}' removida (igual à entrada ou detectada como inglês)")
+    for chave, campo, regra in (
+        ("collocations", "expressao", "não contém a palavra da entrada (ou uma forma dela)"),
+        ("frases", "en", "o campo em inglês não contém a palavra da entrada (ou uma forma dela)"),
+        ("padroes", "padrao", "padrão genérico, ou o exemplo não usa a palavra da entrada"),
+        ("alternativas", "palavra", "alternativa igual à entrada ou em português"),
+        ("relacionados", None, "igual à entrada ou em português"),
+        ("intencoes", None, "é um dos exemplos do enunciado"),
+    ):
+        for x in antes.get(chave) or []:
+            if x not in (depois.get(chave) or []):
+                nome = x if isinstance(x, str) else x.get(campo)
+                m.append(f"{chave}: '{nome}' removido ({regra})")
+    for i, x in enumerate(antes.get("sentidos") or []):
+        casado = next((y for y in depois.get("sentidos") or [] if y.get("definicao") == x.get("definicao")), None)
+        if not casado:
+            m.append(f"sentidos[{i}] removido (sem exemplo que use a palavra, ou a definição não fala do mesmo campo das traduções/conceito): \"{x.get('definicao')}\"")
+        elif x.get("exemplo") and not casado.get("exemplo"):
+            m.append(f"sentidos[{i}].exemplo removido (a frase em inglês não contém a palavra da entrada ou uma forma dela): \"{x['exemplo']}\"")
+        elif x.get("exemplo") and casado.get("exemplo") != x["exemplo"]:
+            m.append(f"sentidos[{i}].exemplo foi cortado (tradução colada no campo em inglês): \"{x['exemplo']}\" -> \"{casado['exemplo']}\"")
+    return m
+
+
+def avisos_de_estilo(v):
+    """Avisos que não recusam: tamanhos acima do padrão da casa (o prompt do robô antigo pedia mais curto)."""
+    casa = [("conceito", 260), ("erroComum", 200)]
+    a = [f"{k}: {len(v[k])} letras (a casa pede até {n})" for k, n in casa if isinstance(v.get(k), str) and len(v[k]) > n]
+    if len(v.get("sentidos") or []) > 3:
+        a.append("sentidos: a casa pede no máximo 3")
+    return a
+
+
+def conferir_um(item, pendente, estrito=True):
+    """Devolve (verbete_limpo, avisos, motivos_de_recusa). Sem motivos = aceito."""
+    lema = pendente["lema"]
+    base = pendente.get("base") or {}
+    original = item.get("verbete")
+    ruins = erros_de_formato(original)
+    fatais = [x for x in ruins if "campo desconhecido" not in x]
+    avisos = [x for x in ruins if "campo desconhecido" in x]
+    if fatais:
+        return None, avisos, ["formato: " + x for x in fatais]
+    v = arrumar(json.loads(json.dumps(original)))
+    antes = json.loads(json.dumps(v))
+    try:
+        v = conferir(lema, v, (base.get("formas") or []), base)
+    except ValueError as e:
+        return None, avisos, [f"conferir: {e}"]
+    tirou = o_que_a_conferencia_tirou(antes, v)
+    avisos += avisos_de_estilo(v)
+    if v.get("registro") != antes.get("registro"):
+        avisos.append(f"registro mudou de '{antes.get('registro')}' para '{v.get('registro')}' (palavra comum do dia a dia é neutra)")
+    if tirou and estrito:
+        return v, avisos, ["a conferência removeria conteúdo: " + x for x in tirou]
+    return v, avisos + ["removido pela conferência: " + x for x in tirou], []
+
+
+def fazer_importar():
+    """Lê fila/verbetes/*.json, confere, manda os aceitos ao Portal e grava fila/rejeitados.json."""
+    fila = pasta_fila()
+    so_conferir = os.environ.get("SO_CONFERIR", "") not in ("", "0", "false")
+    estrito = os.environ.get("ESTRITO", "1") not in ("0", "false")
+    pend = ler_json(os.path.join(fila, "pendentes.json"), {})
+    por_id = {x["id"]: x for x in pend.get("verbetes") or []}
+    sug_por_id = {x["id"]: {"lema": x.get("termo", ""), "base": {}} for x in pend.get("sugestoes") or []}
+    importados = ler_json(os.path.join(fila, "importados.json"), {})
+    itens = {}
+    arquivos = sorted(f for f in os.listdir(os.path.join(fila, "verbetes"))) if os.path.isdir(os.path.join(fila, "verbetes")) else []
+    for nome in arquivos:
+        if not nome.endswith(".json"):
+            continue
+        dados = ler_json(os.path.join(fila, "verbetes", nome), [])
+        if not isinstance(dados, list):
+            print(f"  {nome}: precisa ser uma lista JSON; ignorado", flush=True)
+            continue
+        for it in dados:
+            if isinstance(it, dict) and it.get("id"):
+                itens[it["id"]] = {**it, "_arquivo": nome}  # o arquivo de nome maior vence (correções)
+    aceitos, rejeitados, avisos_gerais, liberados, ja = [], [], {}, [], 0
+    for id_, it in itens.items():
+        eh_sug = bool(it.get("sugestao")) or (id_ in sug_por_id and id_ not in por_id)
+        pendente = (sug_por_id if eh_sug else por_id).get(id_)
+        lema = (pendente or {}).get("lema") or it.get("lema") or "?"
+        if id_ in importados and not os.environ.get("FORCAR"):
+            ja += 1
+            continue
+        if it.get("verbete") in (None, {}, ""):
+            if not so_conferir:
+                rr = portal("POST", "/api/robo/dicionario/sugestao" if eh_sug else "/api/robo/dicionario/verbete", {"id": id_, **({"erro": "liberada pelo Claude"} if eh_sug else {})})
+                print(f"  {lema}: liberado (HTTP {rr.status_code})", flush=True)
+            liberados.append({"id": id_, "lema": lema})
+            continue
+        if not pendente:
+            rejeitados.append({"id": id_, "lema": lema, "arquivo": it["_arquivo"], "motivos": ["id não está em fila/pendentes.json (reserva desta rodada?)"]})
+            continue
+        try:
+            v, avisos, motivos = conferir_um(it, pendente, estrito)
+        except Exception as e:  # noqa: BLE001
+            v, avisos, motivos = None, [], [f"erro inesperado na conferência: {type(e).__name__}: {e}"]
+        if avisos:
+            avisos_gerais[lema] = avisos
+        if motivos:
+            rejeitados.append({"id": id_, "lema": lema, "arquivo": it["_arquivo"], "motivos": motivos})
+            continue
+        if so_conferir:
+            aceitos.append({"id": id_, "lema": lema})
+            continue
+        corpo = {"id": id_, "verbete": v}
+        rr = portal("POST", "/api/robo/dicionario/sugestao" if eh_sug else "/api/robo/dicionario/verbete", corpo)
+        if rr.status_code == 200:
+            res = (rr.json() or {}).get("resultado")
+            if res == "revisado":
+                avisos_gerais.setdefault(lema, []).append("já revisado pela escola; o Portal não sobrescreve")
+            importados[id_] = lema
+            aceitos.append({"id": id_, "lema": lema})
+            print(f"  {lema}: aceito{' (' + res + ')' if res else ''}", flush=True)
+        else:
+            detalhe = rr.text[:400]
+            extra = " A reserva foi solta pelo Portal." if rr.status_code == 422 else ""
+            rejeitados.append({"id": id_, "lema": lema, "arquivo": it["_arquivo"], "motivos": [f"Portal recusou: HTTP {rr.status_code} {detalhe}{extra}"]})
+    gravar_json(os.path.join(fila, "rejeitados.json"), {"geradoEm": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "ensaio": so_conferir, "rejeitados": rejeitados, "avisos": avisos_gerais})
+    if not so_conferir:
+        gravar_json(os.path.join(fila, "importados.json"), importados)
+    for r in rejeitados:
+        print(f"  RECUSADO {r['lema']} ({r['id']}): " + " | ".join(r["motivos"]), flush=True)
+    for lema, a in avisos_gerais.items():
+        print(f"  aviso {lema}: " + " | ".join(a), flush=True)
+    aviso("Importar" + (" (ensaio, nada enviado)" if so_conferir else ""), f"{len(aceitos)} aceitos, {len(rejeitados)} rejeitados, {len(liberados)} liberados, {ja} já importados antes")
+    return {"aceitos": aceitos, "rejeitados": rejeitados, "liberados": liberados, "avisos": avisos_gerais}
+
+
 if __name__ == "__main__":
     modo = sys.argv[1] if len(sys.argv) > 1 else "enriquecer"
     if modo == "refazer":
