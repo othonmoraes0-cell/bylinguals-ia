@@ -1,0 +1,319 @@
+{
+  "reservadoEm": "2026-11-02T06:44:23Z",
+  "expiraEm": "2026-11-02T12:44:23Z",
+  "minutos": 360,
+  "verbetes": [
+    {
+      "id": "cmv1lrqae04ajl306uqhfcwfv",
+      "lema": "song",
+      "tipo": "PALAVRA",
+      "base": {
+        "lema": "song",
+        "tipo": "PALAVRA",
+        "ipaUk": "/sɒŋ/",
+        "ipaUs": "/sɔŋ/",
+        "formas": [
+          "songs"
+        ],
+        "classes": [
+          "noun"
+        ],
+        "antonimos": [],
+        "derivados": [
+          "action song",
+          "anisong",
+          "answer song",
+          "art song",
+          "birdsong",
+          "bird song",
+          "buay song",
+          "bush song",
+          "campfire song",
+          "car crash song",
+          "coon song",
+          "copy song",
+          "cover song",
+          "cradle song",
+          "deep song",
+          "diss song",
+          "drinking song",
+          "evensong",
+          "fight song",
+          "folk song",
+          "for a song",
+          "for a song and a dance",
+          "for a song and dance",
+          "foresong"
+        ],
+        "sinonimos": [],
+        "traducoes": [
+          "canção",
+          "cantiga",
+          "música"
+        ],
+        "frequencia": 501,
+        "sentidosEn": [
+          {
+            "classe": "noun",
+            "exemplo": "Thomas listened to his favorite song on the radio yesterday.",
+            "definicao": "A musical composition with lyrics for voice or voices, performed by singing."
+          },
+          {
+            "classe": "noun",
+            "definicao": "Any musical composition."
+          },
+          {
+            "classe": "noun",
+            "exemplo": "This subject for heroic song.",
+            "definicao": "Poetical composition; poetry; verse."
+          },
+          {
+            "classe": "noun",
+            "exemplo": "How often the enthusiast has dwelt upon the birds bursting into song, the buds bursting into flower, all nature bursting into life!—as though a state of things in which everything around us is bursting is at all pleasant.",
+            "definicao": "The act or art of singing."
+          },
+          {
+            "classe": "noun",
+            "exemplo": "I love hearing the song of canary birds.",
+            "definicao": "A melodious sound made by a bird, insect, whale or other animal."
+          },
+          {
+            "classe": "noun",
+            "definicao": "The distinctive sound that a male bird utters to attract a mate or to protect his territory; contrasts with call; also, similar vocalisations made by female birds."
+          },
+          {
+            "classe": "noun",
+            "exemplo": "He bought that car for a song.",
+            "definicao": "A low price, especially one under the expected value; chiefly in for a song."
+          }
+        ],
+        "relacionados": [
+          "canticle",
+          "go for a song"
+        ]
+      }
+    },
+    {
+      "id": "cmv1lrqb004bjl306apjml960",
+      "lema": "across",
+      "tipo": "PALAVRA",
+      "base": {
+        "lema": "across",
+        "tipo": "PALAVRA",
+        "ipaUk": "/əˈkɹɒs/",
+        "ipaUs": "/əˈkɹɔs/",
+        "formas": [
+          "acrost",
+          "acrosses"
+        ],
+        "tonica": 1,
+        "classes": [
+          "preposition",
+          "adverb",
+          "noun"
+        ],
+        "silabas": "a·cross",
+        "antonimos": [],
+        "derivados": [
+          "across country",
+          "across from",
+          "across lots",
+          "across-the-board",
+          "across the board",
+          "across the ditch",
+          "across the line",
+          "across the pond",
+          "across the way",
+          "across variable",
+          "acrosswise",
+          "broad across the beam",
+          "bump across",
+          "come across",
+          "come across with",
+          "cut across",
+          "drag one's balls across",
+          "draw a sponge across the slate",
+          "draw a wet sponge across the slate",
+          "draw the sponge across the slate",
+          "draw the wet sponge across the slate",
+          "get across",
+          "get across the line",
+          "happen across"
+        ],
+        "sinonimos": [],
+        "traducoes": [
+          "através",
+          "do outro lado de",
+          "perpendicularmente",
+          "em horizontal"
+        ],
+        "frequencia": 504,
+        "sentidosEn": [
+          {
+            "classe": "preposition",
+            "exemplo": "We rowed across the river.",
+            "definicao": "To, toward, or from the far side of (something that lies between two points of interest)."
+          },
+          {
+            "classe": "preposition",
+            "exemplo": "That store is across the street.",
+            "definicao": "On the opposite side of (something that lies between two points of interest)."
+          },
+          {
+            "classe": "preposition",
+            "exemplo": "And make sure you're parked across the mall in the outside lot. […] Last time I was there, I parked in a parking structure and paid an arm and a leg for it.",
+            "definicao": "across from: on the opposite side, relative to something that lies between, from (a point of interest)."
+          },
+          {
+            "classe": "preposition",
+            "exemplo": "The meteor streaked across the sky.",
+            "definicao": "From one side to the other within (a space being traversed)."
+          },
+          {
+            "classe": "preposition",
+            "exemplo": "\"Mam's baking and Cathleen's asleep. I've got a pile of washing bubbling in the copper, so I'd best be off.\" With that she was across the room and out the door.",
+            "definicao": "At or near the far end of (a space)."
+          },
+          {
+            "classe": "preposition",
+            "exemplo": "This poetry speaks across the centuries.",
+            "definicao": "Spanning."
+          },
+          {
+            "classe": "preposition",
+            "exemplo": "All across the country, voters were communicating their representatives.",
+            "definicao": "Throughout."
+          },
+          {
+            "classe": "preposition",
+            "exemplo": "Lay the top stick across the bottom one.",
+            "definicao": "So as to intersect or pass through or over at an angle."
+          }
+        ],
+        "relacionados": [
+          "cross"
+        ]
+      }
+    },
+    {
+      "id": "cmv1lrqb904brl306qy0qj7we",
+      "lema": "action",
+      "tipo": "PALAVRA",
+      "base": {
+        "lema": "action",
+        "tipo": "PALAVRA",
+        "ipaUk": "/ˈækʃən̩/",
+        "ipaUs": "/ˈækʃən/",
+        "formas": [
+          "actions",
+          "action!",
+          "actioning",
+          "actioned"
+        ],
+        "classes": [
+          "noun",
+          "interjection",
+          "adjective",
+          "verb"
+        ],
+        "silabas": "ac·tion",
+        "antonimos": [
+          "inaction",
+          "omission",
+          "cut"
+        ],
+        "derivados": [
+          "actant",
+          "actionable",
+          "action adventure",
+          "actional",
+          "action doll",
+          "actionee",
+          "actioner",
+          "actionfest",
+          "action figure",
+          "action film",
+          "action-forcing",
+          "action game",
+          "action group",
+          "action hero",
+          "action hoe",
+          "action house",
+          "actionism",
+          "actionist",
+          "action item",
+          "actionize",
+          "actionless",
+          "actionlet",
+          "actionlike",
+          "action man"
+        ],
+        "sinonimos": [
+          "act",
+          "acting",
+          "cocky",
+          "deed",
+          "doing",
+          "aphrodisia",
+          "carnal knowledge",
+          "coitus",
+          "coition",
+          "commerce",
+          "commixtion",
+          "congress"
+        ],
+        "traducoes": [
+          "ação"
+        ],
+        "frequencia": 505,
+        "sentidosEn": [
+          {
+            "classe": "noun",
+            "definicao": "The effort of performing or doing something."
+          },
+          {
+            "classe": "noun",
+            "definicao": "Something done, often so as to accomplish a purpose."
+          },
+          {
+            "classe": "noun",
+            "exemplo": "Knead bread with a rocking action.",
+            "definicao": "A way of motion or functioning."
+          },
+          {
+            "classe": "noun",
+            "exemplo": "a movie full of exciting action",
+            "definicao": "Fast-paced activity."
+          },
+          {
+            "classe": "noun",
+            "exemplo": "Pressing a piano key causes the action of the hammer on the string.",
+            "definicao": "The way in which a mechanical device acts when used; especially a firearm."
+          },
+          {
+            "classe": "noun",
+            "exemplo": "pump-action shotgun",
+            "definicao": "The way in which a mechanical device acts when used; especially a firearm.; The way in which cartridges are loaded, locked, and extracted from the mechanism."
+          },
+          {
+            "classe": "noun",
+            "exemplo": "Spinola was hovering about the external fittings of the figure with unusual fussiness. When at length he released the left hand it seemed for an almost perceptible moment that the action hung. Then the arm descended and carried out the discard.",
+            "definicao": "A physical mechanism of a firearm or other device."
+          },
+          {
+            "classe": "noun",
+            "exemplo": "The run in bar 12 is almost impossible with this piano's heavy action.",
+            "definicao": "The mechanism, that is the set of moving mechanical parts, of a keyboard instrument, like a piano, which transfers the motion of the key to the sound-making device."
+          }
+        ],
+        "relacionados": [
+          "act",
+          "agency",
+          "agent",
+          "deed"
+        ]
+      }
+    }
+  ],
+  "sugestoes": []
+}
