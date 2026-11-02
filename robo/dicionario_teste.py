@@ -241,6 +241,7 @@ def fazer_teste(maquina, maquinas):
             except Exception as e:  # noqa: BLE001
                 reg[chave] = None
                 reg[f"erro_{chave}"] = str(e)[:200]
+                print(f"ERRO {chave} {palavra}: {type(e).__name__}: {str(e)[:300]}", flush=True)
             reg[f"segundos_{chave}"] = round(time.time() - t0)
             reg[f"defeitos_{chave}"] = defeitos(reg[chave], palavra)
         saida.write(json.dumps(reg, ensure_ascii=False) + "\n")
