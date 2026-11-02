@@ -214,8 +214,8 @@ def defeitos(v, lema):
 def fazer_teste(maquina, maquinas):
     todas = list(dict.fromkeys(PALAVRAS))
     minhas = todas[int(maquina) - 1 :: int(maquinas)]
-    if os.environ.get('LIMITE_PALAVRAS', '25000').isdigit() and int(os.environ['LIMITE_PALAVRAS']) < 100:
-        minhas = minhas[: int(os.environ['LIMITE_PALAVRAS'])]
+    if os.environ.get('LIMITE_PALAVRAS', '25000').isdigit() and int(os.environ.get('LIMITE_PALAVRAS', '25000')) < 100:
+        minhas = minhas[: int(os.environ.get('LIMITE_PALAVRAS', '25000'))]
     wn = carregar_wordnet()
     tatoeba = carregar_tatoeba(todas)
     saida = open(f"teste-{maquina}.jsonl", "w", encoding="utf-8")
